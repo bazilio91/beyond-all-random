@@ -20,9 +20,34 @@
       <ul>
         <li><strong>Guaranteed picks</strong> &mdash; Each factory gets at least one high-rarity combat unit so every player has something spicy to build.</li>
         <li><strong>Archetypes</strong> &mdash; Rarity 5+ combat units roll an archetype (Glass Cannon, Tank, Sniper, Brawler) that skews their stat scaling. Turrets get their own set (Fortress, Watchtower, Suppressor).</li>
-        <li><strong>Traits</strong> &mdash; High-rarity units with an archetype can roll a special trait (Phantom, Juggernaut, Swift, etc.) that applies flat bonuses on top of rarity scaling.</li>
+        <li><strong>Traits</strong> &mdash; Rarity 5+ units with an archetype have a 50% chance to roll a special trait that applies flat bonuses on top of rarity scaling. See the trait table below.</li>
         <li><strong>Cursed units</strong> &mdash; A small percentage of combat units become cursed: weaker stats but much cheaper to build. Interesting strategic trade-offs.</li>
       </ul>
+
+      <h3>Traits</h3>
+      <p>Each archetype has its own pool of traits. When a unit qualifies, one trait is randomly selected from its archetype's pool.</p>
+      <table class="trait-table">
+        <thead><tr><th>Trait</th><th>Archetypes</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Phantom</td><td>Glass Cannon, Sniper, Watchtower</td><td>Cloaking while stationary or slow-moving. Reduced HP.</td></tr>
+          <tr><td>Volatile</td><td>Glass Cannon</td><td>+30% damage, &minus;40% HP. Extreme glass cannon.</td></tr>
+          <tr><td>Overcharged</td><td>Glass Cannon</td><td>+20% faster reload, +50% energy per shot.</td></tr>
+          <tr><td>Juggernaut</td><td>Tank, Fortress</td><td>+60% HP, &minus;30% speed, &minus;25% turn rate (Tank only).</td></tr>
+          <tr><td>Regenerator</td><td>Tank</td><td>3&times; idle auto-heal.</td></tr>
+          <tr><td>Fortified</td><td>Tank</td><td>+30% HP, +20% slower reload.</td></tr>
+          <tr><td>Marksman</td><td>Sniper, Watchtower</td><td>+30% range, +30% better accuracy, &minus;30% AoE.</td></tr>
+          <tr><td>Piercing</td><td>Sniper</td><td>+20% damage, &minus;50% AoE. Single-target focus.</td></tr>
+          <tr><td>Swift</td><td>Brawler</td><td>+40% speed, +30% acceleration, &minus;30% HP.</td></tr>
+          <tr><td>Berserker</td><td>Brawler, Suppressor</td><td>+20&ndash;30% damage, +30% AoE, worse accuracy.</td></tr>
+          <tr><td>Siege</td><td>Brawler, Suppressor</td><td>+40% AoE, +15% damage, &minus;15% speed (Brawler) or worse accuracy (Suppressor).</td></tr>
+          <tr><td>Shielded</td><td>Fortress</td><td>+40% shield power, +20% shield radius.</td></tr>
+          <tr><td>Plague</td><td>Glass Cannon, Brawler</td><td>Weapons set fires on impact (burns wrecks, denies reclaim). +15% AoE, &minus;10% damage.</td></tr>
+          <tr><td>Siren</td><td>Fortress, Suppressor</td><td>Extreme knockback on hit &mdash; sends enemies flying. +15% AoE, &minus;30% damage.</td></tr>
+          <tr><td>GravWell</td><td>Tank, Watchtower</td><td>Shots pull enemies toward impact point (negative impulse). +40% AoE, &minus;20% damage.</td></tr>
+          <tr><td>Bouncer</td><td>Glass Cannon, Brawler</td><td>Massive knockback, sends enemies across the map. &minus;40% damage.</td></tr>
+          <tr><td>Drunk</td><td>Sniper, Suppressor</td><td>Projectiles wobble and dance erratically. Much worse accuracy, +30% AoE to compensate.</td></tr>
+        </tbody>
+      </table>
 
       <h3>How to use</h3>
       <ol>
@@ -68,8 +93,8 @@
         <label><strong>Trait Chance</strong></label>
         <div class="param-desc">Chance that a high-rarity unit with an archetype rolls a special trait on top (e.g. Phantom gives cloaking, Juggernaut gives massive HP). Only applies to units that meet the Min Trait Rarity threshold and already have an archetype.</div>
         <div class="slider-group">
-          <input type="range" id="trait_chance" min="0" max="1" step="0.01" value="0.33">
-          <input type="number" id="trait_chance_num" min="0" max="1" step="0.01" value="0.33">
+          <input type="range" id="trait_chance" min="0" max="1" step="0.01" value="0.5">
+          <input type="number" id="trait_chance_num" min="0" max="1" step="0.01" value="0.5">
         </div>
       </div>
 
@@ -84,10 +109,10 @@
 
       <div class="param-row">
         <label><strong>Min Trait Rarity</strong></label>
-        <div class="param-desc">Minimum rarity level a unit must reach before it can roll a trait. At 7 (Mythical), only the strongest units get traits. Lower it to let more units have special abilities, raise it to keep traits rare and impactful.</div>
+        <div class="param-desc">Minimum rarity level a unit must reach before it can roll a trait. At 5 (Exotic), any unit with an archetype can get traits. Raise it to keep traits rare and impactful.</div>
         <div class="slider-group">
-          <input type="range" id="trait_min_rarity" min="1" max="28" step="1" value="7">
-          <input type="number" id="trait_min_rarity_num" min="1" max="28" step="1" value="7">
+          <input type="range" id="trait_min_rarity" min="1" max="28" step="1" value="5">
+          <input type="number" id="trait_min_rarity_num" min="1" max="28" step="1" value="5">
         </div>
       </div>
 

@@ -87,6 +87,28 @@ header .credit {
 
 .how-it-works a:hover { text-decoration: underline; }
 
+.trait-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85em;
+  margin: 10px 0 16px;
+}
+
+.trait-table th {
+  text-align: left;
+  color: #f0a030;
+  border-bottom: 1px solid #444;
+  padding: 6px 8px;
+}
+
+.trait-table td {
+  padding: 5px 8px;
+  border-bottom: 1px solid #2a2a4e;
+  color: #bbb;
+}
+
+.trait-table tr:hover td { background: #1a2a4e; }
+
 .param-desc {
   color: #999;
   font-size: 0.82em;

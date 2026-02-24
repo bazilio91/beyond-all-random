@@ -9,12 +9,12 @@ local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 			"MGGW","AMBO","Beyond All Reason"
 }
 
-local rarity_chance = 0.5
+local rarity_chance = 0.7
 
 local MIN_FACTORY_RARITY = 7
 local CURSE_CHANCE = 0.10
-local TRAIT_CHANCE = 0.33
-local TRAIT_MIN_RARITY = 7
+local TRAIT_CHANCE = 0.5
+local TRAIT_MIN_RARITY = 5
 
 local PH75 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=75}
 local PH50 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=50}
@@ -24,33 +24,43 @@ local TRAIT_POOLS = {
 		{"Phantom",    PH75, {hp=0.85}},
 		{"Volatile",   {}, {dmg=1.3, hp=0.6}},
 		{"Overcharged",{}, {rld=0.8, energypershot=1.5}},
+		{"Plague",     {}, {fs=1.0, aoe=1.15, dmg=0.9}},
+		{"Bouncer",    {}, {impf=6.0, impb=2.0, dmg=0.6}},
 	},
 	["Tank"] = {
 		{"Juggernaut", {}, {hp=1.6, spd=0.7, turnrate=0.75}},
 		{"Regenerator",{}, {autoheal=3.0}},
 		{"Fortified",  {}, {hp=1.3, rld=1.2}},
+		{"GravWell",   {}, {impf=-2.0, aoe=1.4, dmg=0.8}},
 	},
 	["Sniper"] = {
 		{"Phantom",    PH75, {hp=0.9}},
 		{"Marksman",   {}, {rng=1.3, acc=0.7, aoe=0.7}},
 		{"Piercing",   {}, {dmg=1.2, aoe=0.5}},
+		{"Drunk",      {}, {wob=4000, dnc=60, acc=2.5, aoe=1.3}},
 	},
 	["Brawler"] = {
 		{"Swift",      {}, {spd=1.4, hp=0.7, maxacc=1.3}},
 		{"Berserker",  {}, {dmg=1.2, aoe=1.3, acc=1.4}},
 		{"Siege",      {}, {aoe=1.4, dmg=1.15, spd=0.85}},
+		{"Plague",     {}, {fs=1.0, aoe=1.15, dmg=0.9}},
+		{"Bouncer",    {}, {impf=6.0, impb=2.0, dmg=0.6}},
 	},
 	["Fortress"] = {
 		{"Juggernaut", {}, {hp=1.6}},
 		{"Shielded",   {}, {shield_power=1.4, shield_radius=1.2}},
+		{"Siren",      {}, {impf=3.5, impb=1.0, dmg=0.7, aoe=1.15}},
 	},
 	["Watchtower"] = {
 		{"Phantom",    PH50, {hp=0.9}},
 		{"Marksman",   {}, {rng=1.3, acc=0.7, aoe=0.7}},
+		{"GravWell",   {}, {impf=-2.0, aoe=1.4, dmg=0.8}},
 	},
 	["Suppressor"] = {
 		{"Siege",      {}, {aoe=1.4, dmg=1.15, acc=1.3}},
 		{"Berserker",  {}, {dmg=1.3, aoe=1.3}},
+		{"Siren",      {}, {impf=3.5, impb=1.0, dmg=0.7, aoe=1.15}},
+		{"Drunk",      {}, {wob=4000, dnc=60, acc=2.5, aoe=1.3}},
 	},
 }
 
@@ -80,6 +90,8 @@ local function set_v(x,m,r,f,em)
 		return nil
 	end
 end
+
+local function tm_a(t,k,m,f) if m and t[k] then t[k]=t[k]*m;if f then t[k]=math.floor(t[k])end end end
 
 -- {name, m_hp, m_spd, m_dmg, m_rng, m_rld, m_aoe, m_acc}
 local AT = {
@@ -382,37 +394,34 @@ for name, ud in pairs(UnitDefs) do
 		-- Apply trait flat multipliers after rarity+archetype scaling
 		local trait = unit_traits[name]
 		if trait then
-			for k, v in pairs(trait[2]) do
-				ud[k] = v
-			end
+			for k, v in pairs(trait[2]) do ud[k] = v end
 			local tm = trait[3]
-			if tm.hp then ud[Health] = math.floor(ud[Health] * tm.hp) end
-			if tm.spd and ud.speed then ud.speed = math.floor(ud.speed * tm.spd) end
-			if tm.turnrate and ud.turnrate then ud.turnrate = ud.turnrate * tm.turnrate end
-			if tm.maxacc and ud.maxacc then ud.maxacc = ud.maxacc * tm.maxacc end
-			if tm.autoheal and ud.idleautoheal then ud.idleautoheal = ud.idleautoheal * tm.autoheal end
-			if tm.shield_power and ud.customparams and ud.customparams.shield_power then
-				ud.customparams.shield_power = math.floor(ud.customparams.shield_power * tm.shield_power)
-			end
-			if tm.shield_radius and ud.customparams and ud.customparams.shield_radius then
-				ud.customparams.shield_radius = math.floor(ud.customparams.shield_radius * tm.shield_radius)
+			tm_a(ud, Health, tm.hp, true)
+			tm_a(ud, "speed", tm.spd, true)
+			tm_a(ud, "turnrate", tm.turnrate)
+			tm_a(ud, "maxacc", tm.maxacc)
+			tm_a(ud, "idleautoheal", tm.autoheal)
+			if ud.customparams then
+				tm_a(ud.customparams, "shield_power", tm.shield_power, true)
+				tm_a(ud.customparams, "shield_radius", tm.shield_radius, true)
 			end
 			if ud.weapondefs then
 				for wn, wd in pairs(ud.weapondefs) do
 					if wd.interceptor ~= 1 and wd.targetable ~= 1 then
-						if tm.aoe and wd.areaofeffect then wd.areaofeffect = math.floor(wd.areaofeffect * tm.aoe) end
-						if tm.rng and wd.range then wd.range = math.floor(wd.range * tm.rng) end
-						if tm.rld and wd.reloadtime then wd.reloadtime = wd.reloadtime * tm.rld end
-						if tm.energypershot and wd.energypershot then wd.energypershot = wd.energypershot * tm.energypershot end
-						if tm.acc then
-							if wd.sprayangle then wd.sprayangle = wd.sprayangle * tm.acc end
-							if wd.accuracy then wd.accuracy = wd.accuracy * tm.acc end
-						end
+						tm_a(wd, "areaofeffect", tm.aoe, true)
+						tm_a(wd, "range", tm.rng, true)
+						tm_a(wd, "reloadtime", tm.rld)
+						tm_a(wd, "energypershot", tm.energypershot)
+						tm_a(wd, "sprayangle", tm.acc)
+						tm_a(wd, "accuracy", tm.acc)
 						if tm.dmg and wd.damage then
-							for k, v in pairs(wd.damage) do
-								wd.damage[k] = v * tm.dmg
-							end
+							for k, v in pairs(wd.damage) do wd.damage[k] = v * tm.dmg end
 						end
+						if tm.impf then wd.impulsefactor = tm.impf end
+						if tm.impb then wd.impulseboost = tm.impb end
+						if tm.fs then wd.firestarter = tm.fs end
+						if tm.wob then wd.wobble = tm.wob end
+						if tm.dnc then wd.dance = tm.dnc end
 					end
 				end
 			end
