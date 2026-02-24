@@ -14,6 +14,28 @@
       <div class="credit">Based on AMBO &amp; MGGW's Random Rarities mod</div>
     </header>
 
+    <section class="how-it-works">
+      <h2>How it works</h2>
+      <p>This mod randomizes every unit in the game with a rarity tier (Common through Beyond All Reason). Higher rarity units get exponentially stronger stats &mdash; more HP, damage, range, speed &mdash; but also cost more to build. The system has several layers:</p>
+      <ul>
+        <li><strong>Guaranteed picks</strong> &mdash; Each factory gets at least one high-rarity combat unit so every player has something spicy to build.</li>
+        <li><strong>Archetypes</strong> &mdash; Rarity 5+ combat units roll an archetype (Glass Cannon, Tank, Sniper, Brawler) that skews their stat scaling. Turrets get their own set (Fortress, Watchtower, Suppressor).</li>
+        <li><strong>Traits</strong> &mdash; High-rarity units with an archetype can roll a special trait (Phantom, Juggernaut, Swift, etc.) that applies flat bonuses on top of rarity scaling.</li>
+        <li><strong>Cursed units</strong> &mdash; A small percentage of combat units become cursed: weaker stats but much cheaper to build. Interesting strategic trade-offs.</li>
+      </ul>
+
+      <h3>How to use</h3>
+      <ol>
+        <li>Configure the parameters below and click Generate.</li>
+        <li>Copy the output string.</li>
+        <li>In the BAR lobby, paste it with: <code>!bset tweakdefs0 &lt;paste&gt;</code></li>
+        <li>For faction buffs, use a second slot: <code>!bset tweakdefs1 &lt;paste&gt;</code></li>
+      </ol>
+
+      <h3>Renamer widget</h3>
+      <p>To see rarity names on units in-game, install the renamer widget from the <a href="https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591" target="_blank" rel="noopener">BAR Discord thread</a>. Drop the widget <code>.lua</code> file into your <code>data/LuaUI/Widgets/</code> folder and enable it in-game.</p>
+    </section>
+
     <div class="tabs">
       <button class="tab-btn active" data-panel="panel-rarity">Rarity Mod</button>
       <button class="tab-btn" data-panel="panel-faction">Faction Buff</button>
@@ -21,7 +43,8 @@
 
     <div id="panel-rarity" class="panel active">
       <div class="param-row">
-        <label><strong>Rarity Chance</strong> &mdash; probability to escalate each tier</label>
+        <label><strong>Rarity Chance</strong></label>
+        <div class="param-desc">Probability to escalate to the next rarity tier on each roll. At 0.7, each unit has a 70% chance to go from Common to Uncommon, then 70% from Uncommon to Rare, and so on up to 28 tiers. Higher values mean more legendary units but also wilder imbalance.</div>
         <div class="slider-group">
           <input type="range" id="rarity_chance" min="0" max="1" step="0.01" value="0.7">
           <input type="number" id="rarity_chance_num" min="0" max="1" step="0.01" value="0.7">
@@ -29,7 +52,8 @@
       </div>
 
       <div class="param-row">
-        <label><strong>Curse Chance</strong> &mdash; combat unit curse probability</label>
+        <label><strong>Curse Chance</strong></label>
+        <div class="param-desc">Chance that a combat unit becomes cursed instead of getting a normal rarity roll. Cursed units have reduced HP, damage, range, and speed &mdash; but cost significantly less metal and energy. Set to 0 to disable cursed units entirely.</div>
         <div class="slider-group">
           <input type="range" id="curse_chance" min="0" max="0.5" step="0.01" value="0.1">
           <input type="number" id="curse_chance_num" min="0" max="0.5" step="0.01" value="0.1">
@@ -37,7 +61,8 @@
       </div>
 
       <div class="param-row">
-        <label><strong>Trait Chance</strong> &mdash; high-rarity trait probability</label>
+        <label><strong>Trait Chance</strong></label>
+        <div class="param-desc">Chance that a high-rarity unit with an archetype rolls a special trait on top (e.g. Phantom gives cloaking, Juggernaut gives massive HP). Only applies to units that meet the Min Trait Rarity threshold and already have an archetype.</div>
         <div class="slider-group">
           <input type="range" id="trait_chance" min="0" max="1" step="0.01" value="0.33">
           <input type="number" id="trait_chance_num" min="0" max="1" step="0.01" value="0.33">
@@ -45,7 +70,8 @@
       </div>
 
       <div class="param-row">
-        <label><strong>Min Factory Rarity</strong> &mdash; guaranteed pick floor per factory</label>
+        <label><strong>Min Factory Rarity</strong></label>
+        <div class="param-desc">The minimum rarity floor for guaranteed factory picks. Each factory randomly picks one combat unit and forces it to at least this rarity level. At 7 (Mythical), every player is guaranteed at least one strong unit per factory. Set higher for crazier games.</div>
         <div class="slider-group">
           <input type="range" id="min_factory_rarity" min="1" max="28" step="1" value="7">
           <input type="number" id="min_factory_rarity_num" min="1" max="28" step="1" value="7">
@@ -53,7 +79,8 @@
       </div>
 
       <div class="param-row">
-        <label><strong>Min Trait Rarity</strong> &mdash; minimum rarity for trait eligibility</label>
+        <label><strong>Min Trait Rarity</strong></label>
+        <div class="param-desc">Minimum rarity level a unit must reach before it can roll a trait. At 7 (Mythical), only the strongest units get traits. Lower it to let more units have special abilities, raise it to keep traits rare and impactful.</div>
         <div class="slider-group">
           <input type="range" id="trait_min_rarity" min="1" max="28" step="1" value="7">
           <input type="number" id="trait_min_rarity_num" min="1" max="28" step="1" value="7">
@@ -66,6 +93,7 @@
     <div id="panel-faction" class="panel">
       <div class="param-row">
         <label><strong>Faction</strong></label>
+        <div class="param-desc">Choose which faction's units receive the buff. This applies a flat stat multiplier to all units belonging to the selected faction &mdash; useful for balancing asymmetric games or just having fun.</div>
         <div class="faction-group">
           <button class="faction-btn" data-faction="arm">Armada</button>
           <button class="faction-btn" data-faction="cor">Cortex</button>
@@ -75,6 +103,7 @@
 
       <div class="param-row">
         <label><strong>Buff Multiplier</strong></label>
+        <div class="param-desc">Flat multiplier applied to HP, speed, damage, range, AoE, and shields for all units of the selected faction. Reload time is divided by this value (faster reload). At 1.5x, units are 50% stronger across the board.</div>
         <div class="pct-label" id="pct-label">+50%</div>
         <div class="slider-group">
           <input type="range" id="faction_multiplier" min="1" max="3" step="0.05" value="1.5">
