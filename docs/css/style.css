@@ -94,6 +94,19 @@ header .credit {
   margin-bottom: 8px;
 }
 
+.welcome-preview {
+  background: #111;
+  border: 1px solid #333;
+  border-radius: 4px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-family: monospace;
+  font-size: 0.85em;
+  color: #ccc;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
 .tabs {
   display: flex;
   gap: 2px;
