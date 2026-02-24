@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Welcome message
-  var welcomeMsg = "!welcome-message BaRandom mod is active! Every unit has a random rarity - higher = stronger but costlier. Get the renamer widget & info: https://bazilio91.github.io/beyond-all-random/ | Widget: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591";
+  var welcomeMsg = "!welcome-message BaRandom mod is active! Every unit has a random rarity - higher = stronger but costlier. To see unit rarities in-game, install the renamer widget: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591 | More info: https://bazilio91.github.io/beyond-all-random/";
 
   document.getElementById('welcome-preview').textContent = welcomeMsg;
 
