@@ -35,6 +35,65 @@ header .credit {
   margin-top: 4px;
 }
 
+.how-it-works {
+  background: #16213e;
+  border: 1px solid #2a2a4e;
+  border-radius: 8px;
+  padding: 20px 24px;
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.how-it-works h2 {
+  color: #f0a030;
+  font-size: 1.2em;
+  margin-bottom: 10px;
+}
+
+.how-it-works h3 {
+  color: #ccc;
+  font-size: 1em;
+  margin-top: 16px;
+  margin-bottom: 6px;
+}
+
+.how-it-works p {
+  color: #bbb;
+  font-size: 0.9em;
+  margin-bottom: 10px;
+}
+
+.how-it-works ul, .how-it-works ol {
+  color: #bbb;
+  font-size: 0.9em;
+  padding-left: 20px;
+  margin-bottom: 8px;
+}
+
+.how-it-works li { margin-bottom: 4px; }
+
+.how-it-works code {
+  background: #0f3460;
+  padding: 1px 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+  color: #f0a030;
+}
+
+.how-it-works a {
+  color: #f0a030;
+  text-decoration: none;
+}
+
+.how-it-works a:hover { text-decoration: underline; }
+
+.param-desc {
+  color: #999;
+  font-size: 0.82em;
+  line-height: 1.5;
+  margin-bottom: 8px;
+}
+
 .tabs {
   display: flex;
   gap: 2px;
