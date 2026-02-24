@@ -1,4 +1,5 @@
---Random Rarities by LordOfHangovers vdev
+--BaRandom v5 by LoH
+--Use with: !bset tweakdefs0 <mod.b64>
 rename_list = {}
 local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 			"Legendary","Mythical","Miracle","Divine","Eternal",
@@ -82,7 +83,7 @@ end
 
 -- {name, m_hp, m_spd, m_dmg, m_rng, m_rld, m_aoe, m_acc}
 local AT = {
-	{"Glass Cannon",  1.0, 1.05,1.12,1.05,0.91,1.05,0.96},
+	{"Glass Cannon",  0.88,1.05,1.12,1.05,0.91,1.05,0.96},
 	{"Tank",          1.22,1.0, 1.01,1.04,0.97,1.04,0.97},
 	{"Sniper",        1.03,1.04,1.07,1.14,0.98,0.95,0.91},
 	{"Brawler",       1.06,1.10,1.05,1.0, 0.88,1.10,0.97},

@@ -1,0 +1,33 @@
+name: Auto Bump Version
+
+on:
+  push:
+    branches: [main, master]
+
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get latest tag
+        id: tag
+        run: |
+          LATEST=$(git tag --sort=-v:refname | grep -E '^v[0-9]+$' | head -1)
+          if [ -z "$LATEST" ]; then
+            NEXT="v1"
+          else
+            NUM=${LATEST#v}
+            NEXT="v$((NUM + 1))"
+          fi
+          echo "next=$NEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Create tag
+        run: |
+          git tag ${{ steps.tag.outputs.next }}
+          git push origin ${{ steps.tag.outputs.next }}
