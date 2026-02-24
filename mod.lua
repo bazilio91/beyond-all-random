@@ -79,15 +79,11 @@ local function get_rarity_min(min)
 end
 
 local function set_v(x,m,r,f,em)
-	local f = f or false
-	local t = 0
-	local em = em or 1
 	if x then
-		t = x*(m^r)+((m-1)*x)
+		local t = x*(m^r)+((m-1)*x)
+		if x > 0 and t <= 0 then t = x*(m^r) end
 		if f then t = math.floor(t) end
-		return t*em
-	else
-		return nil
+		return t*(em or 1)
 	end
 end
 
@@ -329,6 +325,7 @@ for name, ud in pairs(UnitDefs) do
 					weapon_def.areaofeffect = set_v(weapon_def.areaofeffect, m_aoe, unit_rarity)
 					weapon_def.weaponvelocity = set_v(weapon_def.weaponvelocity, 1.06, unit_rarity)
 					weapon_def.range = set_v(weapon_def.range, m_rng, unit_rarity, true)
+					weapon_def.flighttime = set_v(weapon_def.flighttime, m_rng, unit_rarity)
 					weapon_def.sprayangle = set_v(weapon_def.sprayangle, m_acc, unit_rarity)
 					weapon_def.accuracy = set_v(weapon_def.accuracy, m_acc, unit_rarity)
 
