@@ -68,42 +68,34 @@ document.addEventListener('DOMContentLoaded', function() {
     displayOutput(b64, 'tweakdefs1');
   });
 
-  // Generate welcome message
-  var welcomeMsg = '!welcome-message BaRandom mod is active! Every unit has a random rarity — higher = stronger but costlier. Check your units\' rarity in the tooltip. Get the renamer widget & info: https://bazilio91.github.io/beyond-all-random/ | Widget install: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591';
+  // Welcome message
+  var welcomeMsg = "!welcome-message BaRandom mod is active! Every unit has a random rarity - higher = stronger but costlier. Get the renamer widget & info: https://bazilio91.github.io/beyond-all-random/ | Widget: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591";
 
-  var welcomePreview = document.getElementById('welcome-preview');
-  if (welcomePreview) {
-    welcomePreview.textContent = welcomeMsg;
-  }
+  document.getElementById('welcome-preview').textContent = welcomeMsg;
 
   document.getElementById('gen-welcome').addEventListener('click', function() {
-    var section = document.querySelector('.output-section');
-    var textarea = document.getElementById('output');
-    var counter = document.getElementById('size-counter');
-    var hint = document.getElementById('usage-hint');
-
-    textarea.value = welcomeMsg;
-    section.classList.add('visible');
-
-    var len = welcomeMsg.length;
-    counter.textContent = len + ' chars';
-    counter.className = 'size-counter ok';
-    hint.textContent = 'Paste into lobby chat';
+    displayOutput(welcomeMsg, 'welcome');
   });
 
-  function displayOutput(b64, slot) {
+  function displayOutput(text, slot) {
     var section = document.querySelector('.output-section');
     var textarea = document.getElementById('output');
     var counter = document.getElementById('size-counter');
     var hint = document.getElementById('usage-hint');
 
-    textarea.value = b64;
+    textarea.value = text;
     section.classList.add('visible');
 
-    var len = b64.length;
-    counter.textContent = len.toLocaleString() + ' / 16,384 chars';
-    counter.className = 'size-counter ' + (len > 16384 ? 'over' : len > 14000 ? 'warn' : 'ok');
-    hint.textContent = '!bset ' + slot + ' <paste>';
+    var len = text.length;
+    if (slot === 'welcome') {
+      counter.textContent = len + ' chars';
+      counter.className = 'size-counter ok';
+      hint.textContent = 'Paste into lobby chat';
+    } else {
+      counter.textContent = len.toLocaleString() + ' / 16,384 chars';
+      counter.className = 'size-counter ' + (len > 16384 ? 'over' : len > 14000 ? 'warn' : 'ok');
+      hint.textContent = '!bset ' + slot + ' <paste>';
+    }
   }
 
   // Copy to clipboard
