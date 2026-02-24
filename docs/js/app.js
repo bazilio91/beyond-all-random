@@ -68,6 +68,29 @@ document.addEventListener('DOMContentLoaded', function() {
     displayOutput(b64, 'tweakdefs1');
   });
 
+  // Generate welcome message
+  var welcomeMsg = '!welcome-message BaRandom mod is active! Every unit has a random rarity — higher = stronger but costlier. Check your units\' rarity in the tooltip. Get the renamer widget & info: https://bazilio91.github.io/beyond-all-random/ | Widget install: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591';
+
+  var welcomePreview = document.getElementById('welcome-preview');
+  if (welcomePreview) {
+    welcomePreview.textContent = welcomeMsg;
+  }
+
+  document.getElementById('gen-welcome').addEventListener('click', function() {
+    var section = document.querySelector('.output-section');
+    var textarea = document.getElementById('output');
+    var counter = document.getElementById('size-counter');
+    var hint = document.getElementById('usage-hint');
+
+    textarea.value = welcomeMsg;
+    section.classList.add('visible');
+
+    var len = welcomeMsg.length;
+    counter.textContent = len + ' chars';
+    counter.className = 'size-counter ok';
+    hint.textContent = 'Paste into lobby chat';
+  });
+
   function displayOutput(b64, slot) {
     var section = document.querySelector('.output-section');
     var textarea = document.getElementById('output');

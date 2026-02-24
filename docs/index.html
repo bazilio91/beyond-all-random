@@ -42,6 +42,7 @@
     <div class="tabs">
       <button class="tab-btn active" data-panel="panel-rarity">Rarity Mod</button>
       <button class="tab-btn" data-panel="panel-faction">Faction Buff</button>
+      <button class="tab-btn" data-panel="panel-welcome">Welcome Message</button>
     </div>
 
     <div id="panel-rarity" class="panel active">
@@ -115,6 +116,12 @@
       </div>
 
       <button class="generate-btn" id="gen-faction">Generate Faction Buff</button>
+    </div>
+
+    <div id="panel-welcome" class="panel">
+      <p class="param-desc">Generate a <code>!welcome-message</code> command for your BAR lobby. It tells players about the mod and links to the renamer widget. Paste the output into the lobby chat to set the welcome message for all joining players.</p>
+      <div class="welcome-preview" id="welcome-preview"></div>
+      <button class="generate-btn" id="gen-welcome">Generate Welcome Message</button>
     </div>
 
     <div class="output-section">
