@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Beyond All Random</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Beyond All Random</h1>
+      <div class="subtitle">Tweakdefs builder for Beyond All Reason</div>
+      <div class="credit">Based on AMBO &amp; MGGW's Random Rarities mod</div>
+    </header>
+
+    <div class="tabs">
+      <button class="tab-btn active" data-panel="panel-rarity">Rarity Mod</button>
+      <button class="tab-btn" data-panel="panel-faction">Faction Buff</button>
+    </div>
+
+    <div id="panel-rarity" class="panel active">
+      <div class="param-row">
+        <label><strong>Rarity Chance</strong> &mdash; probability to escalate each tier</label>
+        <div class="slider-group">
+          <input type="range" id="rarity_chance" min="0" max="1" step="0.01" value="0.7">
+          <input type="number" id="rarity_chance_num" min="0" max="1" step="0.01" value="0.7">
+        </div>
+      </div>
+
+      <div class="param-row">
+        <label><strong>Curse Chance</strong> &mdash; combat unit curse probability</label>
+        <div class="slider-group">
+          <input type="range" id="curse_chance" min="0" max="0.5" step="0.01" value="0.1">
+          <input type="number" id="curse_chance_num" min="0" max="0.5" step="0.01" value="0.1">
+        </div>
+      </div>
+
+      <div class="param-row">
+        <label><strong>Trait Chance</strong> &mdash; high-rarity trait probability</label>
+        <div class="slider-group">
+          <input type="range" id="trait_chance" min="0" max="1" step="0.01" value="0.33">
+          <input type="number" id="trait_chance_num" min="0" max="1" step="0.01" value="0.33">
+        </div>
+      </div>
+
+      <div class="param-row">
+        <label><strong>Min Factory Rarity</strong> &mdash; guaranteed pick floor per factory</label>
+        <div class="slider-group">
+          <input type="range" id="min_factory_rarity" min="1" max="28" step="1" value="7">
+          <input type="number" id="min_factory_rarity_num" min="1" max="28" step="1" value="7">
+        </div>
+      </div>
+
+      <div class="param-row">
+        <label><strong>Min Trait Rarity</strong> &mdash; minimum rarity for trait eligibility</label>
+        <div class="slider-group">
+          <input type="range" id="trait_min_rarity" min="1" max="28" step="1" value="7">
+          <input type="number" id="trait_min_rarity_num" min="1" max="28" step="1" value="7">
+        </div>
+      </div>
+
+      <button class="generate-btn" id="gen-rarity">Generate Rarity Mod</button>
+    </div>
+
+    <div id="panel-faction" class="panel">
+      <div class="param-row">
+        <label><strong>Faction</strong></label>
+        <div class="faction-group">
+          <button class="faction-btn" data-faction="arm">Armada</button>
+          <button class="faction-btn" data-faction="cor">Cortex</button>
+          <button class="faction-btn active" data-faction="leg">Legion</button>
+        </div>
+      </div>
+
+      <div class="param-row">
+        <label><strong>Buff Multiplier</strong></label>
+        <div class="pct-label" id="pct-label">+50%</div>
+        <div class="slider-group">
+          <input type="range" id="faction_multiplier" min="1" max="3" step="0.05" value="1.5">
+          <input type="number" id="faction_multiplier_num" min="1" max="3" step="0.05" value="1.5">
+        </div>
+      </div>
+
+      <button class="generate-btn" id="gen-faction">Generate Faction Buff</button>
+    </div>
+
+    <div class="output-section">
+      <div class="output-header">
+        <span class="size-counter ok" id="size-counter">0 / 16,384 chars</span>
+        <span class="usage-hint" id="usage-hint">!bset tweakdefs0 &lt;paste&gt;</span>
+      </div>
+      <textarea id="output" readonly></textarea>
+      <button class="copy-btn" id="copy-btn">Copy to Clipboard</button>
+    </div>
+  </div>
+
+  <script src="js/pipeline.js"></script>
+  <script src="js/rarity-template.js"></script>
+  <script src="js/faction-template.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
