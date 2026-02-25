@@ -12,10 +12,10 @@ const min = fs.readFileSync("/dev/stdin", "utf8").trim();
 //   local g={<arm_floor>,<cor_floor>,<leg_floor>}
 //   local h={<arm_ceil>,<cor_ceil>,<leg_ceil>}
 
-const anchor = "local b=0.7;";
+const anchor = "local b=0.75;";
 const idx = min.indexOf(anchor);
 if (idx === -1) {
-  console.error("Cannot find 'local b=0.7;' in minified output");
+  console.error("Cannot find 'local b=0.75;' in minified output");
   process.exit(1);
 }
 
@@ -36,16 +36,16 @@ function advance(defaultVal, delimiter) {
   return seg;
 }
 
-const seg1  = advance("0.7", ";local c=");
-const seg2  = advance("7",   ";local d=");
-const seg3  = advance("0.1", ";local e=");
-const seg4  = advance("0.5", ";local f=");
-const seg5  = advance("5",   ";local g={");
-const seg6  = advance("0",   ",");
-const seg7  = advance("0",   ",");
-const seg8  = advance("0",   "}local h={");
-const seg9  = advance("28",  ",");
-const seg10 = advance("28",  ",");
+const seg1  = advance("0.75", ";local c=");
+const seg2  = advance("7",    ";local d=");
+const seg3  = advance("0.2",  ";local e=");
+const seg4  = advance("0.5",  ";local f=");
+const seg5  = advance("5",    ";local g={");
+const seg6  = advance("0",    ",");
+const seg7  = advance("0",    ",");
+const seg8  = advance("0",    "}local h={");
+const seg9  = advance("28",   ",");
+const seg10 = advance("28",   ",");
 
 // Skip past the last default value
 const lastDefault = "28";
@@ -60,7 +60,7 @@ const segments = [seg0, seg1, seg2, seg3, seg4, seg5, seg6, seg7, seg8, seg9, se
 
 // Verify round-trip
 const defaults = {
-  rarity_chance: 0.7, MIN_FACTORY_RARITY: 7, CURSE_CHANCE: 0.1,
+  rarity_chance: 0.75, MIN_FACTORY_RARITY: 7, CURSE_CHANCE: 0.2,
   TRAIT_CHANCE: 0.5, TRAIT_MIN_RARITY: 5,
   arm_floor: 0, cor_floor: 0, leg_floor: 0,
   arm_ceil: 28, cor_ceil: 28, leg_ceil: 28
@@ -103,9 +103,9 @@ const output = `const RarityTemplate = {
 ${segLines}
   ],
   defaults: {
-    rarity_chance: 0.7,
+    rarity_chance: 0.75,
     MIN_FACTORY_RARITY: 7,
-    CURSE_CHANCE: 0.1,
+    CURSE_CHANCE: 0.2,
     TRAIT_CHANCE: 0.5,
     TRAIT_MIN_RARITY: 5,
     arm_floor: 0,

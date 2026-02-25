@@ -8,10 +8,10 @@ local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 			"MGGW","AMBO","Beyond All Reason"
 }
 
-local rarity_chance = 0.7
+local rarity_chance = 0.75
 
 local MIN_FACTORY_RARITY = 7
-local CURSE_CHANCE = 0.1
+local CURSE_CHANCE = 0.2
 local TRAIT_CHANCE = 0.5
 local TRAIT_MIN_RARITY = 5
 local rf={0,0,0}
