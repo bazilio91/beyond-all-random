@@ -1,5 +1,5 @@
 const RarityTemplate = {
-  header: "--BaRandom v5 by LoH\n--Use with: !bset tweakdefs0 <mod.b64>",
+  header: "--BaRandom v19 by LoH\n--Use with: !bset tweakdefs0 <mod.b64>",
   segments: [
     "rename_list={}local a={\"Uncommon\",\"Rare\",\"Exceptional\",\"Epic\",\"Exotic\",\"Legendary\",\"Mythical\",\"Miracle\",\"Divine\",\"Eternal\",\"Supreme\",\"Omega\",\"Unique\",\"Jackpot\",\"Immortal\",\"Absurd\",\"Godlike\",\"TooRNG\",\"Insanely Lucky\",\"Dope\",\"Admin\",\"GOD\",\"ERROR\",\"Super Sayan\",\"Beyond\",\"MGGW\",\"AMBO\",\"Beyond All Reason\"}local b=",
     ";local c=",
