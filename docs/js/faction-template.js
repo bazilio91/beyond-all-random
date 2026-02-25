@@ -13,7 +13,7 @@ const FactionTemplate = {
     var f = this.factions[factionKey];
     var pct = Math.round((multiplier - 1) * 100);
     var sign = pct >= 0 ? "+" : "";
-    var header = "--BaRandom " + f.name + " " + sign + pct + "% by LoH\n--Use with: !bset tweakdefs1 <faction_buff.b64>";
+    var header = "--BaRandom " + f.name + " " + sign + pct + "% by LoH";
     var body = this.segments[0] + f.prefix
              + this.segments[1] + multiplier
              + this.segments[2];

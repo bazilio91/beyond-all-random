@@ -1,5 +1,4 @@
 --BaRandom Legion +50% by LoH
---Use with: !bset tweakdefs1 <faction_buff.b64>
 local FACTION="leg"
 local M=1.5
 for name,ud in pairs(UnitDefs) do

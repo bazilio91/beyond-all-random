@@ -1,5 +1,4 @@
 --BaRandom v22 by LoH
---Use with: !bset tweakdefs0 <mod.b64>
 rename_list = {}
 local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 			"Legendary","Mythical","Miracle","Divine","Eternal",
