@@ -88,7 +88,16 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Welcome message
-  var welcomeMsg = "!welcome-message BaRandom mod is active! Every unit has a random rarity - higher = stronger but costlier. To see unit rarities in-game, install the renamer widget: https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591 | More info: https://bazilio91.github.io/beyond-all-random/";
+  var welcomeMsg = "!welcome-message Welcome to BEYOND ALL RANDOM!\n" +
+    "Every unit gets a random rarity tier — higher rarity = stronger stats but higher cost to build.\n" +
+    "High-rarity combat units roll archetypes (Glass Cannon, Tank, Sniper, Brawler) and may get special traits like Phantom (cloaking), Juggernaut (+60% HP), or Plague (sets fires on impact). Some units are cursed — weaker but much cheaper!\n" +
+    "To see unit rarities in-game you need the Tweakdefs Bridge widget.\n" +
+    "Get it here: https://discord.com/channels/549281623154229250/1468742915315470591\n" +
+    "Put the Tweakdefs_bridge.lua file into Beyond-All-Reason/data/LuaUI/Widgets/ (create the Widgets folder if it's missing).\n" +
+    "In-game go to Settings → Custom and toggle ON \"Tweakdefs Bridge\".\n" +
+    "Press ALT+M to toggle between default and modified unit names. Don't spam it — UI reload takes ~3 sec.\n" +
+    "If it doesn't work, restart your game.\n" +
+    "Config builder & more info: https://bazilio91.github.io/beyond-all-random/";
 
   document.getElementById('welcome-preview').textContent = welcomeMsg;
 
