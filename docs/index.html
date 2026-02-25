@@ -116,6 +116,28 @@
         </div>
       </div>
 
+      <div class="param-row">
+        <label><strong>Per-Faction Rarity Overrides</strong></label>
+        <div class="param-desc">Set a rarity floor and ceiling per faction. Units belonging to a faction will have their rarity clamped to this range. Use this to make one faction's units consistently stronger (e.g. set Legion floor to 10 for a tough AI opponent). Leave at 0–28 for no override.</div>
+        <div class="faction-rarity-grid">
+          <div class="faction-rarity-row">
+            <span class="faction-label">Armada</span>
+            <label>Floor <input type="number" id="arm_floor" min="0" max="28" step="1" value="0"></label>
+            <label>Ceiling <input type="number" id="arm_ceil" min="0" max="28" step="1" value="28"></label>
+          </div>
+          <div class="faction-rarity-row">
+            <span class="faction-label">Cortex</span>
+            <label>Floor <input type="number" id="cor_floor" min="0" max="28" step="1" value="0"></label>
+            <label>Ceiling <input type="number" id="cor_ceil" min="0" max="28" step="1" value="28"></label>
+          </div>
+          <div class="faction-rarity-row">
+            <span class="faction-label">Legion</span>
+            <label>Floor <input type="number" id="leg_floor" min="0" max="28" step="1" value="0"></label>
+            <label>Ceiling <input type="number" id="leg_ceil" min="0" max="28" step="1" value="28"></label>
+          </div>
+        </div>
+      </div>
+
       <button class="generate-btn" id="gen-rarity">Generate Rarity Mod</button>
     </div>
 

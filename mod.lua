@@ -12,9 +12,11 @@ local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 local rarity_chance = 0.7
 
 local MIN_FACTORY_RARITY = 7
-local CURSE_CHANCE = 0.10
+local CURSE_CHANCE = 0.1
 local TRAIT_CHANCE = 0.5
 local TRAIT_MIN_RARITY = 5
+local rf={0,0,0}
+local rx={28,28,28}
 
 local PH75 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=75}
 local PH50 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=50}
@@ -88,6 +90,7 @@ local function set_v(x,m,r,f,em)
 end
 
 local function tm_a(t,k,m,f) if m and t[k] then t[k]=t[k]*m;if f then t[k]=math.floor(t[k])end end end
+local function fi(n) return n:byte()==99 and 2 or n:byte()==108 and 3 or 1 end
 
 -- {name, m_hp, m_spd, m_dmg, m_rng, m_rld, m_aoe, m_acc}
 local AT = {
@@ -115,7 +118,6 @@ local factory_units = {
 	{"armfast","armamph","armzeus","armmav","armsptk","armfido","armsnipe","armfboy","armspid","armvader","armscab"},
 	{"armcroc","armlatnk","armbull","armgremlin","armmart","armmerl","armmanni"},
 	{"armcrus","armsubk","armserp","armantiship","armbats","armmship","armepoch","armlship"},
-	{"armpincer","armcroc"},
 	{"armbanth","armraz","armmar","armvang","armlun","armthor"},
 	{"corshad","corbw"},
 	{"corak","corstorm","corthud"},
@@ -127,7 +129,6 @@ local factory_units = {
 	{"corpyro","coramph","corcan","corsumo","cortermite","cormort","corhrk","corroach","corsktl","cormando"},
 	{"corsala","correap","corparrow","corgol","corban","cormart","corvroc","cortrem"},
 	{"corcrus","corshark","corssub","corantiship","corbats","cormship","corblackhy","corfship"},
-	{"corgarp","corsala","corparrow"},
 	{"corkorg","corkarg","corjugg","corshiva","corcat","corsok","cordemon"},
 	{"legkam","legcib","legmos"},
 	{"leggob","leglob","legcen","legbal","legkark"},
@@ -139,7 +140,6 @@ local factory_units = {
 	{"legstr","legamph","legshot","leginc","legsrail","legbart","leginfestor","leghrk","legsnapper"},
 	{"legmrv","legaskirmtank","legfloat","legaheattank","legmed","legamcluster","legvcarry","legavroc","leginf"},
 	{"leganavycruiser","leganavyheavysub","leganavybattlesub","leganavybattleship","leganavyartyship","leganavymissileship","leganavyflagship","leganavyantiswarm"},
-	{"legamphtank","legfloat","legamph"},
 	{"legeheatraymech","legeallterrainmech","legjav","legelrpcmech","legehovertank","legerailtank","legeshotgunmech","legkeres"},
 }
 
@@ -154,7 +154,9 @@ for _, combat in ipairs(factory_units) do
 	end
 	if #available == 0 then available = combat end
 	local pick = available[math.random(#available)]
-	local r = get_rarity_min(MIN_FACTORY_RARITY)
+	local fci=fi(pick)
+	local r = get_rarity_min(math.max(MIN_FACTORY_RARITY, rf[fci]))
+	if r > rx[fci] then r = rx[fci] end
 	unit_rarities[pick] = r
 	guaranteed[pick] = true
 end
@@ -170,7 +172,11 @@ for name, ud in pairs(UnitDefs) do
 			cursed_units[name] = cl
 			unit_rarities[name] = 0
 		else
-			unit_rarities[name] = get_rarity()
+			local r=get_rarity()
+			local fci=fi(name)
+			if r<rf[fci] then r=rf[fci] end
+			if r>rx[fci] then r=rx[fci] end
+			unit_rarities[name] = r
 		end
 	end
 end
@@ -208,6 +214,7 @@ for name, ud in pairs(UnitDefs) do
 	local ECost = ud.energycost and "energycost" or "buildcostenergy"
 	local Health = ud.health and "health" or "maxdamage"
 	if not ud.power then ud.power = ud[MCost] + (ud[ECost]/60) end
+	local cp = ud.customparams
 	local bugfix = unit_rarity
 	if not (unit_rarity <= #rarities) then unit_rarity = #rarities end
 	if not (unit_rarity <= 6) and (name == "armcom" or name == "corcom" or name == "legcom") then
@@ -215,8 +222,8 @@ for name, ud in pairs(UnitDefs) do
 	end
 	local cl = cursed_units[name]
 	if cl then
-		if ud.customparams then
-			ud.customparams.cursed = tostring(cl)
+		if cp then
+			cp.cursed = tostring(cl)
 		end
 		ud[Health] = set_v(ud[Health], 0.93, cl, true)
 		ud.speed = set_v(ud.speed, 0.97, cl, true)
@@ -245,7 +252,7 @@ for name, ud in pairs(UnitDefs) do
 			table.insert(rename_list, {name, "desc_prefix", "Cursed Mk." .. cl .. " "})
 		end
 	elseif bugfix > 0 then
-		if ud.customparams then ud.customparams.rarity = tostring(unit_rarity) end
+		if cp then cp.rarity = tostring(unit_rarity) end
 		local at = unit_archetypes[name]
 		local m_hp  = at and at[2] or 1.1
 		local m_spd = at and at[3] or 1.05
@@ -268,7 +275,7 @@ for name, ud in pairs(UnitDefs) do
 		ud.energyupkeep = set_v(ud.energyupkeep, 1.04, unit_rarity)
 		ud.tidalgenerator = set_v(ud.tidalgenerator, 1.04, unit_rarity)
 		ud.windgenerator = set_v(ud.windgenerator, 1.04, unit_rarity)
-		if ud.windgenerator and not ud.customparams.energymultiplier then ud[MCost] = set_v(ud[MCost], 0.97, unit_rarity, true) end
+		if ud.windgenerator and not cp.energymultiplier then ud[MCost] = set_v(ud[MCost], 0.97, unit_rarity, true) end
 		if ud.tidalgenerator or ud.windgenerator or ud.builder == true or (not ud.speed and not ud.weapondefs) then
 			ud[MCost] = set_v(ud[MCost], 0.97, unit_rarity, true)
 			ud[ECost] = set_v(ud[ECost], 0.98, unit_rarity, true)
@@ -282,12 +289,12 @@ for name, ud in pairs(UnitDefs) do
 			ud.workertime = set_v(ud.workertime, 1.05, unit_rarity, true)
 			ud.builddistance = set_v(ud.builddistance, 1.05, unit_rarity, true)
 		end
-		if ud.customparams then
-			ud.customparams.energyconv_efficiency = set_v(ud.customparams.energyconv_efficiency, 1.04, unit_rarity)
-			ud.customparams.energyconv_capacity = set_v(ud.customparams.energyconv_capacity, 1.04, unit_rarity, true)
-			ud.customparams.shield_power = set_v(ud.customparams.shield_power, 1.1, unit_rarity, true)
-			ud.customparams.shield_radius = set_v(ud.customparams.shield_radius, 1.05, unit_rarity, true)
-			ud.customparams.energymultiplier = set_v(ud.customparams.energymultiplier, 1.04, unit_rarity, true)
+		if cp then
+			cp.energyconv_efficiency = set_v(cp.energyconv_efficiency, 1.04, unit_rarity)
+			cp.energyconv_capacity = set_v(cp.energyconv_capacity, 1.04, unit_rarity, true)
+			cp.shield_power = set_v(cp.shield_power, 1.1, unit_rarity, true)
+			cp.shield_radius = set_v(cp.shield_radius, 1.05, unit_rarity, true)
+			cp.energymultiplier = set_v(cp.energymultiplier, 1.04, unit_rarity, true)
 		end
 		if ud.weapondefs then
 			for weapon_name, weapon_def in pairs(ud.weapondefs) do
@@ -296,6 +303,7 @@ for name, ud in pairs(UnitDefs) do
 					weapon_def.damage.default = set_v(weapon_def.damage.default, 1.1, unit_rarity)
 					weapon_def.areaofeffect = set_v(weapon_def.areaofeffect, 1.01, unit_rarity)
 				else
+					local wcp = weapon_def.customparams
 					if not weapon_def.reloadtime or weapon_def.reloadtime < 0.034 then weapon_def.reloadtime = 0.034 end
 					if weapon_def.burstrate and weapon_def.burstrate < 0.034 then weapon_def.burstrate = 0.034 end
 					if weapon_def.burst and weapon_def.burstrate then
@@ -329,11 +337,11 @@ for name, ud in pairs(UnitDefs) do
 					weapon_def.sprayangle = set_v(weapon_def.sprayangle, m_acc, unit_rarity)
 					weapon_def.accuracy = set_v(weapon_def.accuracy, m_acc, unit_rarity)
 
-                    if weapon_def.customparams then
-                        weapon_def.customparams.overrange_distance = set_v(weapon_def.customparams.overrange_distance, m_rng, unit_rarity, true)
-                        weapon_def.customparams.controlradius = set_v(weapon_def.customparams.controlradius, m_rng, unit_rarity, true)
-                        weapon_def.customparams.engagementrange = set_v(weapon_def.customparams.engagementrange, m_rng, unit_rarity, true)
-                    end
+					if wcp then
+						wcp.overrange_distance = set_v(wcp.overrange_distance, m_rng, unit_rarity, true)
+						wcp.controlradius = set_v(wcp.controlradius, m_rng, unit_rarity, true)
+						wcp.engagementrange = set_v(wcp.engagementrange, m_rng, unit_rarity, true)
+					end
 
 					if weapon_def.damage then
 						local dm = 1
@@ -348,7 +356,7 @@ for name, ud in pairs(UnitDefs) do
 							weapon_def.reloadtime = 0.034
 							rt = 0.034
 						end
-						local is_sweepfire = weapon_def.customparams and weapon_def.customparams.sweepfire
+						local is_sweepfire = wcp and wcp.sweepfire
 						if is_sweepfire or name == "armbeamer" then
 							weapon_def.reloadtime = weapon_def.reloadtime or rt
 							rt = weapon_def.reloadtime
@@ -398,9 +406,9 @@ for name, ud in pairs(UnitDefs) do
 			tm_a(ud, "turnrate", tm.turnrate)
 			tm_a(ud, "maxacc", tm.maxacc)
 			tm_a(ud, "idleautoheal", tm.autoheal)
-			if ud.customparams then
-				tm_a(ud.customparams, "shield_power", tm.shield_power, true)
-				tm_a(ud.customparams, "shield_radius", tm.shield_radius, true)
+			if cp then
+				tm_a(cp, "shield_power", tm.shield_power, true)
+				tm_a(cp, "shield_radius", tm.shield_radius, true)
 			end
 			if ud.weapondefs then
 				for wn, wd in pairs(ud.weapondefs) do

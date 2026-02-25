@@ -53,7 +53,13 @@ document.addEventListener('DOMContentLoaded', function() {
       MIN_FACTORY_RARITY: parseInt(document.getElementById('min_factory_rarity').value),
       CURSE_CHANCE: parseFloat(document.getElementById('curse_chance').value),
       TRAIT_CHANCE: parseFloat(document.getElementById('trait_chance').value),
-      TRAIT_MIN_RARITY: parseInt(document.getElementById('trait_min_rarity').value)
+      TRAIT_MIN_RARITY: parseInt(document.getElementById('trait_min_rarity').value),
+      arm_floor: parseInt(document.getElementById('arm_floor').value),
+      cor_floor: parseInt(document.getElementById('cor_floor').value),
+      leg_floor: parseInt(document.getElementById('leg_floor').value),
+      arm_ceil: parseInt(document.getElementById('arm_ceil').value),
+      cor_ceil: parseInt(document.getElementById('cor_ceil').value),
+      leg_ceil: parseInt(document.getElementById('leg_ceil').value)
     };
     var b64 = RarityTemplate.build(params);
     displayOutput(b64, 'tweakdefs0');
