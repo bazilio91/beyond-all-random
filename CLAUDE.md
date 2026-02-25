@@ -12,6 +12,8 @@ Requires `luamin` (`npm install -g luamin`) for minification.
 
 ```bash
 make          # minifies mod.lua and encodes to mod.b64 (URL-safe base64 for BAR lobby)
+make segments # regenerates docs/js/rarity-template.js from mod.lua (auto-runs on pre-commit)
+make setup    # installs pre-commit hook (run once after cloning)
 make clean    # removes mod.b64
 ```
 

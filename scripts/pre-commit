@@ -1,0 +1,8 @@
+#!/bin/bash
+# Regenerate rarity-template.js segments when mod.lua is staged
+
+if git diff --cached --name-only | grep -q '^mod\.lua$'; then
+  echo "mod.lua changed — regenerating rarity-template.js segments..."
+  make segments
+  git add docs/js/rarity-template.js
+fi

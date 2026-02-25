@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean segments setup
 
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo v0)
 
@@ -13,6 +13,14 @@ mod.b64: mod.lua
 
 faction_buff.b64: faction_buff.lua
 	./serialize.sh faction_buff.lua > faction_buff.b64
+
+segments: mod.lua
+	@luamin -c < mod.lua | node scripts/generate_segments.js
+
+setup:
+	cp scripts/pre-commit .git/hooks/pre-commit
+	chmod +x .git/hooks/pre-commit
+	@echo "Pre-commit hook installed"
 
 clean:
 	rm -f mod.b64 faction_buff.b64
