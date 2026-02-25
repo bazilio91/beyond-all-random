@@ -1,4 +1,4 @@
---BaRandom v24 by LoH
+--BaRandom v25 by LoH
 rename_list = {}
 local rarities = {	"Uncommon","Rare","Exceptional","Epic","Exotic",
 			"Legendary","Mythical","Miracle","Divine","Eternal",
