@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <title>Beyond All Random</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
@@ -185,9 +186,11 @@
     </div>
   </div>
 
-  <script src="js/pipeline.js"></script>
-  <script src="js/rarity-template.js"></script>
-  <script src="js/faction-template.js"></script>
-  <script src="js/app.js"></script>
+  <script>
+    var v = new Date().getTime();
+    ["js/pipeline.js","js/rarity-template.js","js/faction-template.js","js/app.js"].forEach(function(s) {
+      document.write('<script src="' + s + '?v=' + v + '"><\/script>');
+    });
+  </script>
 </body>
 </html>
