@@ -80,6 +80,7 @@ local function get_rarity_min(min)
 end
 
 local function set_v(x,m,r,f,em)
+	x = tonumber(x)
 	if x then
 		local t = x*(m^r)+((m-1)*x)
 		if x > 0 and t <= 0 then t = x*(m^r) end
@@ -89,7 +90,7 @@ local function set_v(x,m,r,f,em)
 end
 
 local function sv(t,k,m,r,f) t[k]=set_v(t[k],m,r,f) end
-local function tm_a(t,k,m,f) if m and t[k] then t[k]=t[k]*m;if f then t[k]=math.floor(t[k])end end end
+local function tm_a(t,k,m,f) local v=tonumber(t[k])if m and v then t[k]=v*m;if f then t[k]=math.floor(t[k])end end end
 local function fi(n) return n:byte()==99 and 2 or n:byte()==108 and 3 or 1 end
 
 -- {name, m_hp, m_spd, m_dmg, m_rng, m_rld, m_aoe, m_acc}
