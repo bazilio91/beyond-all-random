@@ -10,6 +10,7 @@ permissions:
 jobs:
   bump:
     runs-on: ubuntu-latest
+    if: "!contains(github.event.head_commit.message, '[skip ci]')"
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,7 +28,26 @@ jobs:
           fi
           echo "next=$NEXT" >> "$GITHUB_OUTPUT"
 
-      - name: Create tag
+      - name: Update version strings
+        run: |
+          VERSION=${{ steps.tag.outputs.next }}
+          sed -i "1s/--BaRandom .* by LoH/--BaRandom $VERSION by LoH/" mod.lua
+          sed -i "s/--BaRandom v[0-9]* by LoH/--BaRandom $VERSION by LoH/" docs/js/rarity-template.js
+
+      - name: Commit version bump
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add mod.lua docs/js/rarity-template.js
+          git diff --cached --quiet || git commit -m "chore: bump version to ${{ steps.tag.outputs.next }} [skip ci]"
+          git push
+
+      - name: Create tag and release
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           git tag ${{ steps.tag.outputs.next }}
           git push origin ${{ steps.tag.outputs.next }}
+          gh release create ${{ steps.tag.outputs.next }} \
+            --title "${{ steps.tag.outputs.next }}" \
+            --generate-notes

@@ -89,6 +89,7 @@ local function set_v(x,m,r,f,em)
 	end
 end
 
+local function sv(t,k,m,r,f) t[k]=set_v(t[k],m,r,f) end
 local function tm_a(t,k,m,f) if m and t[k] then t[k]=t[k]*m;if f then t[k]=math.floor(t[k])end end end
 local function fi(n) return n:byte()==99 and 2 or n:byte()==108 and 3 or 1 end
 
@@ -106,7 +107,6 @@ local TAT = {
 	{"Suppressor",  1.06, 1.0, 1.04, 1.0,  0.88, 1.12, 0.97},
 }
 
--- Flat list of factory combat unit groups (no faction/factory name keys needed)
 local factory_units = {
 	{"armthund","armkam"},
 	{"armpw","armrock","armham","armwar","armflea"},
@@ -194,7 +194,7 @@ for name, ud in pairs(UnitDefs) do
 	end
 end
 
--- Pass 2b: assign archetype-specific traits to rarity 7+ units
+-- Pass 2b: assign archetype-specific traits to rarity 5+ units
 local unit_traits = {}
 for name, ud in pairs(UnitDefs) do
 	local r = unit_rarities[name] or 0
@@ -222,26 +222,24 @@ for name, ud in pairs(UnitDefs) do
 	end
 	local cl = cursed_units[name]
 	if cl then
-		if cp then
-			cp.cursed = tostring(cl)
-		end
-		ud[Health] = set_v(ud[Health], 0.93, cl, true)
-		ud.speed = set_v(ud.speed, 0.97, cl, true)
-		ud.maxacc = set_v(ud.maxacc, 0.97, cl)
-		ud.turnrate = set_v(ud.turnrate, 0.97, cl)
-		ud.sightdistance = set_v(ud.sightdistance, 0.97, cl)
-		ud.radardistance = set_v(ud.radardistance, 0.97, cl)
-		ud[MCost] = set_v(ud[MCost], 0.85, cl, true)
-		ud[ECost] = set_v(ud[ECost], 0.85, cl, true)
-		ud.buildtime = set_v(ud.buildtime, 0.88, cl)
+		if cp then cp.cursed = tostring(cl) end
+		sv(ud, Health, 0.93, cl, true)
+		sv(ud, "speed", 0.97, cl, true)
+		sv(ud, "maxacc", 0.97, cl)
+		sv(ud, "turnrate", 0.97, cl)
+		sv(ud, "sightdistance", 0.97, cl)
+		sv(ud, "radardistance", 0.97, cl)
+		sv(ud, MCost, 0.85, cl, true)
+		sv(ud, ECost, 0.85, cl, true)
+		sv(ud, "buildtime", 0.88, cl)
 		if ud.weapondefs then
-			for weapon_name, weapon_def in pairs(ud.weapondefs) do
-				if weapon_def.interceptor ~= 1 and weapon_def.targetable ~= 1 then
-					weapon_def.range = set_v(weapon_def.range, 0.97, cl, true)
-					weapon_def.reloadtime = set_v(weapon_def.reloadtime, 1.04, cl)
-					if weapon_def.damage then
-						for k, v in pairs(weapon_def.damage) do
-							weapon_def.damage[k] = set_v(weapon_def.damage[k], 0.94, cl)
+			for _, wd in pairs(ud.weapondefs) do
+				if wd.interceptor ~= 1 and wd.targetable ~= 1 then
+					sv(wd, "range", 0.97, cl, true)
+					sv(wd, "reloadtime", 1.04, cl)
+					if wd.damage then
+						for k, v in pairs(wd.damage) do
+							wd.damage[k] = set_v(v, 0.94, cl)
 						end
 					end
 				end
@@ -261,138 +259,151 @@ for name, ud in pairs(UnitDefs) do
 		local m_rld = at and at[6] or 0.95
 		local m_aoe = at and at[7] or 1.05
 		local m_acc = at and at[8] or 0.97
-		ud.power = set_v(ud.power, 1.2, unit_rarity)
-		ud.speed = set_v(ud.speed, m_spd, unit_rarity, true)
-		ud.maxacc = set_v(ud.maxacc, 1.05, unit_rarity)
-		ud.maxdec = set_v(ud.maxdec, 1.05, unit_rarity)
-		ud.turnrate = set_v(ud.turnrate, 1.05, unit_rarity)
-		ud.sightdistance = set_v(ud.sightdistance, 1.05, unit_rarity)
-		ud.radardistance = set_v(ud.radardistance, 1.1, unit_rarity)
-		ud[Health] = set_v(ud[Health], m_hp, unit_rarity, true)
-		ud.idleautoheal = set_v(ud.idleautoheal, 1.1, unit_rarity)
-		ud.energymake = set_v(ud.energymake, 1.04, unit_rarity)
-		ud.extractsmetal = set_v(ud.extractsmetal, 1.1, unit_rarity)
-		ud.energyupkeep = set_v(ud.energyupkeep, 1.04, unit_rarity)
-		ud.tidalgenerator = set_v(ud.tidalgenerator, 1.04, unit_rarity)
-		ud.windgenerator = set_v(ud.windgenerator, 1.04, unit_rarity)
-		if ud.windgenerator and not cp.energymultiplier then ud[MCost] = set_v(ud[MCost], 0.97, unit_rarity, true) end
+		local R = unit_rarity
+		sv(ud, "power", 1.2, R)
+		sv(ud, "speed", m_spd, R, true)
+		sv(ud, "maxacc", 1.05, R)
+		sv(ud, "maxdec", 1.05, R)
+		sv(ud, "turnrate", 1.05, R)
+		sv(ud, "sightdistance", 1.05, R)
+		sv(ud, "radardistance", 1.1, R)
+		sv(ud, Health, m_hp, R, true)
+		sv(ud, "idleautoheal", 1.1, R)
+		sv(ud, "energymake", 1.04, R)
+		sv(ud, "extractsmetal", 1.1, R)
+		sv(ud, "energyupkeep", 1.04, R)
+		sv(ud, "tidalgenerator", 1.04, R)
+		sv(ud, "windgenerator", 1.04, R)
+		if ud.windgenerator and not cp.energymultiplier then sv(ud, MCost, 0.97, R, true) end
 		if ud.tidalgenerator or ud.windgenerator or ud.builder == true or (not ud.speed and not ud.weapondefs) then
-			ud[MCost] = set_v(ud[MCost], 0.97, unit_rarity, true)
-			ud[ECost] = set_v(ud[ECost], 0.98, unit_rarity, true)
-			ud.buildtime = set_v(ud.buildtime, 0.98, unit_rarity)
-			ud.workertime = set_v(ud.workertime, 1.05, unit_rarity, true)
-			ud.builddistance = set_v(ud.builddistance, 1.05, unit_rarity, true)
+			sv(ud, MCost, 0.97, R, true)
+			sv(ud, ECost, 0.98, R, true)
+			sv(ud, "buildtime", 0.98, R)
+			sv(ud, "workertime", 1.05, R, true)
+			sv(ud, "builddistance", 1.05, R, true)
 		else
-			ud[MCost] = set_v(ud[MCost], 1.035, unit_rarity, true)
-			ud[ECost] = set_v(ud[ECost], 1.04, unit_rarity, true)
-			ud.buildtime = set_v(ud.buildtime, 1.05, unit_rarity)
-			ud.workertime = set_v(ud.workertime, 1.05, unit_rarity, true)
-			ud.builddistance = set_v(ud.builddistance, 1.05, unit_rarity, true)
+			sv(ud, MCost, 1.035, R, true)
+			sv(ud, ECost, 1.04, R, true)
+			sv(ud, "buildtime", 1.05, R)
+			sv(ud, "workertime", 1.05, R, true)
+			sv(ud, "builddistance", 1.05, R, true)
 		end
 		if cp then
-			cp.energyconv_efficiency = set_v(cp.energyconv_efficiency, 1.04, unit_rarity)
-			cp.energyconv_capacity = set_v(cp.energyconv_capacity, 1.04, unit_rarity, true)
-			cp.shield_power = set_v(cp.shield_power, 1.1, unit_rarity, true)
-			cp.shield_radius = set_v(cp.shield_radius, 1.05, unit_rarity, true)
-			cp.energymultiplier = set_v(cp.energymultiplier, 1.04, unit_rarity, true)
+			sv(cp, "energyconv_efficiency", 1.04, R)
+			sv(cp, "energyconv_capacity", 1.04, R, true)
+			sv(cp, "shield_power", 1.1, R, true)
+			sv(cp, "shield_radius", 1.05, R, true)
+			sv(cp, "energymultiplier", 1.04, R, true)
 		end
 		if ud.weapondefs then
-			for weapon_name, weapon_def in pairs(ud.weapondefs) do
-				if weapon_def.interceptor == 1 or weapon_def.targetable == 1 then
-					weapon_def.coverage = set_v(weapon_def.coverage, 1.02, unit_rarity, true)
-					weapon_def.damage.default = set_v(weapon_def.damage.default, 1.1, unit_rarity)
-					weapon_def.areaofeffect = set_v(weapon_def.areaofeffect, 1.01, unit_rarity)
+			for _, wd in pairs(ud.weapondefs) do
+				if wd.interceptor == 1 or wd.targetable == 1 then
+					sv(wd, "coverage", 1.02, R, true)
+					sv(wd.damage, "default", 1.1, R)
+					sv(wd, "areaofeffect", 1.01, R)
 				else
-					local wcp = weapon_def.customparams
-					if not weapon_def.reloadtime or weapon_def.reloadtime < 0.034 then weapon_def.reloadtime = 0.034 end
-					if weapon_def.burstrate and weapon_def.burstrate < 0.034 then weapon_def.burstrate = 0.034 end
-					if weapon_def.burst and weapon_def.burstrate then
-						if weapon_def.burst *weapon_def.burstrate > weapon_def.reloadtime then weapon_def.reloadtime = weapon_def.burst *weapon_def.burstrate end
+					local wcp = wd.customparams
+					if not wd.reloadtime or wd.reloadtime < 0.034 then wd.reloadtime = 0.034 end
+					if wd.burstrate and wd.burstrate < 0.034 then wd.burstrate = 0.034 end
+					if wd.burst and wd.burstrate then
+						if wd.burst*wd.burstrate > wd.reloadtime then wd.reloadtime = wd.burst*wd.burstrate end
 					end
-					if weapon_def.beamtime then
-						if weapon_def.beamtime > weapon_def.reloadtime then weapon_def.reloadtime = weapon_def.beamtime end
+					if wd.beamtime then
+						if wd.beamtime > wd.reloadtime then wd.reloadtime = wd.beamtime end
 					end
 
-					local is_continuous = false
-					if weapon_def.burstrate and weapon_def.burst and weapon_def.reloadtime then
-						local brb = (weapon_def.burstrate*weapon_def.burst)
-						local brbr = brb/weapon_def.reloadtime
-						if brbr >= 0.98 or brb >= weapon_def.reloadtime then
-							is_continuous = true
+					local is_cont = false
+					if wd.burstrate and wd.burst and wd.reloadtime then
+						local brb = wd.burstrate*wd.burst
+						if brb/wd.reloadtime >= 0.98 or brb >= wd.reloadtime then
+							is_cont = true
 						end
 					end
-					local is_continuous_b = false
-					if weapon_def.beamtime and weapon_def.reloadtime then
-						if weapon_def.beamtime/weapon_def.reloadtime >= 0.90 or weapon_def.beamtime >= weapon_def.reloadtime then
-							is_continuous_b = true
+					local is_cont_b = false
+					if wd.beamtime and wd.reloadtime then
+						if wd.beamtime/wd.reloadtime >= 0.90 or wd.beamtime >= wd.reloadtime then
+							is_cont_b = true
 						end
 					end
-					weapon_def.reloadtime = set_v(weapon_def.reloadtime, m_rld, unit_rarity)
-					weapon_def.burstrate = set_v(weapon_def.burstrate, m_rld, unit_rarity)
-
-					weapon_def.areaofeffect = set_v(weapon_def.areaofeffect, m_aoe, unit_rarity)
-					weapon_def.weaponvelocity = set_v(weapon_def.weaponvelocity, 1.06, unit_rarity)
-					weapon_def.range = set_v(weapon_def.range, m_rng, unit_rarity, true)
-					weapon_def.flighttime = set_v(weapon_def.flighttime, m_rng, unit_rarity)
-					weapon_def.sprayangle = set_v(weapon_def.sprayangle, m_acc, unit_rarity)
-					weapon_def.accuracy = set_v(weapon_def.accuracy, m_acc, unit_rarity)
+					sv(wd, "reloadtime", m_rld, R)
+					sv(wd, "burstrate", m_rld, R)
+					sv(wd, "areaofeffect", m_aoe, R)
+					sv(wd, "weaponvelocity", 1.05, R)
+					sv(wd, "range", m_rng, R, true)
+					sv(wd, "flighttime", 1.05, R)
+					sv(wd, "sprayangle", m_acc, R)
+					sv(wd, "accuracy", m_acc, R)
+					sv(wd, "energypershot", 1.1, R, true)
+					sv(wd, "metalpershot", 1.05, R, true)
+					sv(wd, "stockpiletime", 0.96, R, true)
+					sv(wd, "startvelocity", 1.05, R)
+					sv(wd, "turnrate", 1.03, R)
+					sv(wd, "weaponacceleration", 1.05, R)
+					sv(wd, "laserflaresize", 1.04, R)
+					sv(wd, "size", 1.09, R)
+					sv(wd, "thickness", 1.06, R)
 
 					if wcp then
-						wcp.overrange_distance = set_v(wcp.overrange_distance, m_rng, unit_rarity, true)
-						wcp.controlradius = set_v(wcp.controlradius, m_rng, unit_rarity, true)
-						wcp.engagementrange = set_v(wcp.engagementrange, m_rng, unit_rarity, true)
+						sv(wcp, "overrange_distance", m_rng, R, true)
+						sv(wcp, "controlradius", m_rng, R, true)
+						sv(wcp, "engagementrange", m_rng, R, true)
+						local sr = tonumber(wcp.spark_range)
+						if sr then wcp.spark_range = tostring(set_v(sr, 1.05, R, true)) end
+						sv(wcp, "area_onhit_damage", 1.05, R, true)
+						sv(wcp, "area_onhit_range", 1.05, R, true)
 					end
 
-					if weapon_def.damage then
+					if wd.damage then
 						local dm = 1
 						local dsm = 0
-						local rt = weapon_def.reloadtime or 1
-						local bt = weapon_def.beamtime or 0
-						local br = weapon_def.burstrate or 1
-						local b = weapon_def.burst or 1
+						local rt = wd.reloadtime or 1
+						local bt = wd.beamtime or 0
+						local br = wd.burstrate or 1
+						local b = wd.burst or 1
 
 						if rt < 0.034 then
 							dm = dm + (0.034/rt) -1
-							weapon_def.reloadtime = 0.034
+							wd.reloadtime = 0.034
 							rt = 0.034
 						end
 						local is_sweepfire = wcp and wcp.sweepfire
 						if is_sweepfire or name == "armbeamer" then
-							weapon_def.reloadtime = weapon_def.reloadtime or rt
-							rt = weapon_def.reloadtime
+							wd.reloadtime = wd.reloadtime or rt
+							rt = wd.reloadtime
 						end
 						if bt > rt then
 							dm = dm + (bt/rt) -1
-							weapon_def.reloadtime = bt
+							wd.reloadtime = bt
 							rt = bt
 						end
 						if br < 0.034 then
 							dm = dm + (0.034/br) -1
-							weapon_def.burstrate = 0.034
+							wd.burstrate = 0.034
 							br = 0.034
 						end
 						local brb = br*b
-						if weapon_def.burstrate and weapon_def.burst and brb > rt then
+						if wd.burstrate and wd.burst and brb > rt then
 							dm = dm + (brb/rt) -1
-							weapon_def.reloadtime = brb
+							wd.reloadtime = brb
 						end
-						for k, v in pairs(weapon_def.damage) do
+						for k, v in pairs(wd.damage) do
 							if v == "commanders" then
-								weapon_def.damage[k] = set_v(weapon_def.damage[k], 1.02+dsm, unit_rarity, false,dm)
+								wd.damage[k] = set_v(v, 1.02+dsm, R, false, dm)
 							else
-								weapon_def.damage[k] = set_v(weapon_def.damage[k], m_dmg+dsm, unit_rarity, false,dm)
+								wd.damage[k] = set_v(v, m_dmg+dsm, R, false, dm)
 							end
 						end
 					end
-					if weapon_def.shield then
-						weapon_def.shield.power = set_v(weapon_def.shield.power, 1.1, unit_rarity, true)
-						weapon_def.shield.powerregen = set_v(weapon_def.shield.powerregen, 1.1, unit_rarity, true)
-						weapon_def.shield.radius = set_v(weapon_def.shield.radius, 1.05, unit_rarity, true)
-						weapon_def.shield.force = set_v(weapon_def.shield.force, 1.05, unit_rarity)
-						weapon_def.shield.powerregenenergy = set_v(weapon_def.shield.powerregenenergy, 0.99, unit_rarity, true)
+					local sh = wd.shield
+					if sh then
+						sv(sh, "power", 1.1, R, true)
+						sv(sh, "powerregen", 1.1, R, true)
+						sv(sh, "radius", 1.05, R, true)
+						sv(sh, "force", 1.05, R)
+						sv(sh, "powerregenenergy", 0.99, R, true)
 					end
-					if is_continuous == true then weapon_def.reloadtime = weapon_def.burst *weapon_def.burstrate end
-					if is_continuous_b == true then weapon_def.reloadtime = weapon_def.beamtime end
+					if is_cont then wd.reloadtime = wd.burst*wd.burstrate end
+					if is_cont_b then wd.reloadtime = wd.beamtime end
 				end
 			end
 		end

@@ -35,6 +35,36 @@ header .credit {
   margin-top: 4px;
 }
 
+.version-line {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.version-badge {
+  background: #0f3460;
+  color: #f0a030;
+  font-size: 0.8em;
+  font-weight: bold;
+  padding: 2px 10px;
+  border-radius: 12px;
+  border: 1px solid #f0a030;
+}
+
+.changelog-link {
+  color: #888;
+  font-size: 0.8em;
+  text-decoration: none;
+  border-bottom: 1px dotted #666;
+}
+
+.changelog-link:hover {
+  color: #f0a030;
+  border-color: #f0a030;
+}
+
 .how-it-works {
   background: #16213e;
   border: 1px solid #2a2a4e;
@@ -132,7 +162,7 @@ header .credit {
 .tabs {
   display: flex;
   gap: 2px;
-  margin-bottom: 20px;
+  margin-bottom: 0;
 }
 
 .tab-btn {

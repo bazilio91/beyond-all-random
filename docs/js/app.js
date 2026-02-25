@@ -1,4 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
+  // Fetch latest version from GitHub
+  fetch('https://api.github.com/repos/bazilio91/beyond-all-random/releases/latest')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.tag_name) {
+        document.getElementById('version-badge').textContent = data.tag_name;
+        document.getElementById('changelog-link').href = data.html_url;
+      }
+    })
+    .catch(function() {
+      document.getElementById('version-badge').textContent = '';
+    });
+
   // Tab switching
   var tabBtns = document.querySelectorAll('.tab-btn');
   var panels = document.querySelectorAll('.panel');
