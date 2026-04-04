@@ -20,5 +20,11 @@ fi
 HEADERS=$(sed -n '/^--/p; /^--/!q' "$FILE")
 BODY=$(luamin -c < "$FILE")
 
-printf '%s\n%s' "$HEADERS" "$BODY" | base64 | tr -d '\n' | tr '+/' '-_' | tr -d '='
-echo
+MAX_SIZE=16384
+OUTPUT=$(printf '%s\n%s' "$HEADERS" "$BODY" | base64 | tr -d '\n' | tr '+/' '-_' | tr -d '=')
+SIZE=${#OUTPUT}
+if [ "$SIZE" -gt "$MAX_SIZE" ]; then
+    echo "ERROR: output is $SIZE chars, exceeds $MAX_SIZE char limit by $((SIZE - MAX_SIZE))" >&2
+    exit 1
+fi
+echo "$OUTPUT"

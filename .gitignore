@@ -1,4 +1,18 @@
 Beyond-All-Reason/
 *.b64
 .idea/
-random_stats_viewer.lua
+
+# Claude Code
+.claude/
+
+# OpenSpec
+openspec/
+.github/prompts/
+.github/skills/
+
+# Widgets (distributed separately)
+widget_*.lua
+
+# Misc
+docker_err.tmp
+*.tmp

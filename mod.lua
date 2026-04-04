@@ -17,6 +17,12 @@ local TRAIT_MIN_RARITY = 5
 local rf={0,0,0}
 local rx={28,28,28}
 
+local ENGINE_MIN_RELOAD = 0.034
+local BEAM_CONT_THRESHOLD = 0.90
+local BURST_CONT_THRESHOLD = 0.98
+local COMMANDER_RARITY_CAP = 6
+local COMMANDERS = {armcom=true, corcom=true, legcom=true}
+
 local PH75 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=75}
 local PH50 = {cancloak=true, cloakcost=5, cloakcostmoving=15, mincloakdistance=50}
 
@@ -25,27 +31,21 @@ local TRAIT_POOLS = {
 		{"Phantom",    PH75, {hp=0.85}},
 		{"Volatile",   {}, {dmg=1.3, hp=0.6}},
 		{"Overcharged",{}, {rld=0.8, energypershot=1.5}},
-		{"Plague",     {}, {fs=1.0, aoe=1.15, dmg=0.9}},
-		{"Bouncer",    {}, {impf=6.0, impb=2.0, dmg=0.6}},
 	},
 	["Tank"] = {
 		{"Juggernaut", {}, {hp=1.6, spd=0.7, turnrate=0.75}},
 		{"Regenerator",{}, {autoheal=3.0}},
 		{"Fortified",  {}, {hp=1.3, rld=1.2}},
-		{"GravWell",   {}, {impf=-2.0, aoe=1.4, dmg=0.8}},
 	},
 	["Sniper"] = {
 		{"Phantom",    PH75, {hp=0.9}},
 		{"Marksman",   {}, {rng=1.3, acc=0.7, aoe=0.7}},
 		{"Piercing",   {}, {dmg=1.2, aoe=0.5}},
-		{"Drunk",      {}, {wob=4000, dnc=60, acc=2.5, aoe=1.3}},
 	},
 	["Brawler"] = {
 		{"Swift",      {}, {spd=1.4, hp=0.7, maxacc=1.3}},
 		{"Berserker",  {}, {dmg=1.2, aoe=1.3, acc=1.4}},
 		{"Siege",      {}, {aoe=1.4, dmg=1.15, spd=0.85}},
-		{"Plague",     {}, {fs=1.0, aoe=1.15, dmg=0.9}},
-		{"Bouncer",    {}, {impf=6.0, impb=2.0, dmg=0.6}},
 	},
 	["Fortress"] = {
 		{"Juggernaut", {}, {hp=1.6}},
@@ -55,13 +55,11 @@ local TRAIT_POOLS = {
 	["Watchtower"] = {
 		{"Phantom",    PH50, {hp=0.9}},
 		{"Marksman",   {}, {rng=1.3, acc=0.7, aoe=0.7}},
-		{"GravWell",   {}, {impf=-2.0, aoe=1.4, dmg=0.8}},
 	},
 	["Suppressor"] = {
 		{"Siege",      {}, {aoe=1.4, dmg=1.15, acc=1.3}},
 		{"Berserker",  {}, {dmg=1.3, aoe=1.3}},
 		{"Siren",      {}, {impf=3.5, impb=1.0, dmg=0.7, aoe=1.15}},
-		{"Drunk",      {}, {wob=4000, dnc=60, acc=2.5, aoe=1.3}},
 	},
 }
 
@@ -162,9 +160,10 @@ for _, combat in ipairs(factory_units) do
 end
 
 -- Pass 1b: roll remaining units, 10% curse chance for combat units
+-- Skip passive buildings (handled by mod_buildings.lua)
 local cursed_units = {}
 for name, ud in pairs(UnitDefs) do
-	if not unit_rarities[name] then
+	if not unit_rarities[name] and (ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true) then
 		local is_combat = ud.weapondefs and ud.builder ~= true
 		if is_combat and math.random() < CURSE_CHANCE then
 			local cl = get_rarity()
@@ -207,252 +206,268 @@ for name, ud in pairs(UnitDefs) do
 	end
 end
 
+-- Pass 3 helpers
+local function apply_curse_scaling(ud, cl, MCost, ECost, Health)
+	local cp = ud.customparams
+	if cp then cp.cursed = tostring(cl) end
+	sv(ud, Health, 0.93, cl, true)
+	sv(ud, "speed", 0.97, cl, true)
+	sv(ud, "maxacc", 0.97, cl)
+	sv(ud, "turnrate", 0.97, cl)
+	sv(ud, "sightdistance", 0.97, cl)
+	sv(ud, "radardistance", 0.97, cl)
+	sv(ud, MCost, 0.85, cl, true)
+	sv(ud, ECost, 0.85, cl, true)
+	sv(ud, "buildtime", 0.88, cl)
+	if ud.weapondefs then
+		for _, wd in pairs(ud.weapondefs) do
+			if wd.interceptor ~= 1 and wd.targetable ~= 1 then
+				sv(wd, "range", 0.97, cl, true)
+				sv(wd, "reloadtime", 1.04, cl)
+				if wd.damage then
+					for k, v in pairs(wd.damage) do
+						wd.damage[k] = set_v(v, 0.94, cl)
+					end
+				end
+			end
+		end
+	end
+end
+
+local function apply_unit_scaling(ud, R, at, MCost, ECost, Health)
+	local cp = ud.customparams
+	local m_hp  = at and at[2] or 1.1
+	local m_spd = at and at[3] or 1.05
+	if cp then cp.rarity = tostring(R) end
+	sv(ud, "power", 1.2, R)
+	sv(ud, "speed", m_spd, R, true)
+	sv(ud, "maxacc", 1.05, R)
+	sv(ud, "maxdec", 1.05, R)
+	sv(ud, "turnrate", 1.05, R)
+	sv(ud, "sightdistance", 1.05, R)
+	sv(ud, "radardistance", 1.1, R)
+	sv(ud, Health, m_hp, R, true)
+	sv(ud, "idleautoheal", 1.1, R)
+	sv(ud, "energymake", 1.04, R)
+	sv(ud, "extractsmetal", 1.1, R)
+	sv(ud, "energyupkeep", 1.04, R)
+	sv(ud, "tidalgenerator", 1.04, R)
+	sv(ud, "windgenerator", 1.04, R)
+	if ud.builder == true then
+		sv(ud, MCost, 0.97, R, true)
+		sv(ud, ECost, 0.98, R, true)
+		sv(ud, "buildtime", 0.98, R)
+		sv(ud, "workertime", 1.05, R, true)
+		sv(ud, "builddistance", 1.05, R, true)
+	else
+		sv(ud, MCost, 1.035, R, true)
+		sv(ud, ECost, 1.04, R, true)
+		sv(ud, "buildtime", 1.05, R)
+		sv(ud, "workertime", 1.05, R, true)
+		sv(ud, "builddistance", 1.05, R, true)
+	end
+	if cp then
+		sv(cp, "energyconv_efficiency", 1.04, R)
+		sv(cp, "energyconv_capacity", 1.04, R, true)
+		sv(cp, "shield_power", 1.1, R, true)
+		sv(cp, "shield_radius", 1.05, R, true)
+		sv(cp, "energymultiplier", 1.04, R, true)
+	end
+end
+
+local function apply_weapon_scaling(name, ud, R, at)
+	local m_dmg = at and at[4] or 1.05
+	local m_rng = at and at[5] or 1.05
+	local m_rld = at and at[6] or 0.95
+	local m_aoe = at and at[7] or 1.05
+	local m_acc = at and at[8] or 0.97
+	if not ud.weapondefs then return end
+	for _, wd in pairs(ud.weapondefs) do
+		if wd.interceptor == 1 or wd.targetable == 1 then
+			sv(wd, "coverage", 1.02, R, true)
+			sv(wd.damage, "default", 1.1, R)
+			sv(wd, "areaofeffect", 1.01, R)
+		else
+			local wcp = wd.customparams
+			if not wd.reloadtime or wd.reloadtime < ENGINE_MIN_RELOAD then wd.reloadtime = ENGINE_MIN_RELOAD end
+			if wd.burstrate and wd.burstrate < ENGINE_MIN_RELOAD then wd.burstrate = ENGINE_MIN_RELOAD end
+			if wd.burst and wd.burstrate then
+				if wd.burst*wd.burstrate > wd.reloadtime then wd.reloadtime = wd.burst*wd.burstrate end
+			end
+			if wd.beamtime then
+				if wd.beamtime > wd.reloadtime then wd.reloadtime = wd.beamtime end
+			end
+
+			local is_cont = false
+			if wd.burstrate and wd.burst and wd.reloadtime then
+				local brb = wd.burstrate*wd.burst
+				if brb/wd.reloadtime >= BURST_CONT_THRESHOLD or brb >= wd.reloadtime then
+					is_cont = true
+				end
+			end
+			local is_cont_b = false
+			if wd.beamtime and wd.reloadtime then
+				if wd.beamtime/wd.reloadtime >= BEAM_CONT_THRESHOLD or wd.beamtime >= wd.reloadtime then
+					is_cont_b = true
+				end
+			end
+			sv(wd, "reloadtime", m_rld, R)
+			sv(wd, "burstrate", m_rld, R)
+			sv(wd, "areaofeffect", m_aoe, R)
+			sv(wd, "weaponvelocity", 1.05, R)
+			sv(wd, "range", m_rng, R, true)
+			sv(wd, "flighttime", 1.05, R)
+			sv(wd, "sprayangle", m_acc, R)
+			sv(wd, "accuracy", m_acc, R)
+			sv(wd, "energypershot", 1.1, R, true)
+			sv(wd, "metalpershot", 1.05, R, true)
+			sv(wd, "stockpiletime", 0.96, R, true)
+			sv(wd, "startvelocity", 1.05, R)
+			sv(wd, "turnrate", 1.03, R)
+			sv(wd, "weaponacceleration", 1.05, R)
+			sv(wd, "laserflaresize", 1.04, R)
+			sv(wd, "size", 1.09, R)
+			sv(wd, "thickness", 1.06, R)
+
+			if wcp then
+				sv(wcp, "overrange_distance", m_rng, R, true)
+				sv(wcp, "controlradius", m_rng, R, true)
+				sv(wcp, "engagementrange", m_rng, R, true)
+				local sr = tonumber(wcp.spark_range)
+				if sr then wcp.spark_range = tostring(set_v(sr, 1.05, R, true)) end
+				sv(wcp, "area_onhit_damage", 1.05, R, true)
+				sv(wcp, "area_onhit_range", 1.05, R, true)
+			end
+
+			if wd.damage then
+				local dm = 1
+				local rt = wd.reloadtime or 1
+				local bt = wd.beamtime or 0
+				local br = wd.burstrate or 1
+				local b = wd.burst or 1
+
+				if rt < ENGINE_MIN_RELOAD then
+					dm = dm + (ENGINE_MIN_RELOAD/rt) -1
+					wd.reloadtime = ENGINE_MIN_RELOAD
+					rt = ENGINE_MIN_RELOAD
+				end
+				local is_sweepfire = wcp and wcp.sweepfire
+				if is_sweepfire or name == "armbeamer" then
+					wd.reloadtime = wd.reloadtime or rt
+					rt = wd.reloadtime
+				end
+				if bt > rt then
+					dm = dm + (bt/rt) -1
+					wd.reloadtime = bt
+					rt = bt
+				end
+				if br < ENGINE_MIN_RELOAD then
+					dm = dm + (ENGINE_MIN_RELOAD/br) -1
+					wd.burstrate = ENGINE_MIN_RELOAD
+					br = ENGINE_MIN_RELOAD
+				end
+				local brb = br*b
+				if wd.burstrate and wd.burst and brb > rt then
+					dm = dm + (brb/rt) -1
+					wd.reloadtime = brb
+				end
+				for k, v in pairs(wd.damage) do
+					if k == "commanders" then
+						wd.damage[k] = set_v(v, 1.02, R, false, dm)
+					else
+						wd.damage[k] = set_v(v, m_dmg, R, false, dm)
+					end
+				end
+			end
+			local sh = wd.shield
+			if sh then
+				sv(sh, "power", 1.1, R, true)
+				sv(sh, "powerregen", 1.1, R, true)
+				sv(sh, "radius", 1.05, R, true)
+				sv(sh, "force", 1.05, R)
+				sv(sh, "powerregenenergy", 0.99, R, true)
+			end
+			if is_cont then wd.reloadtime = wd.burst*wd.burstrate end
+			if is_cont_b then wd.reloadtime = wd.beamtime end
+		end
+	end
+end
+
+local function apply_traits(ud, trait, Health)
+	local cp = ud.customparams
+	for k, v in pairs(trait[2]) do ud[k] = v end
+	local tm = trait[3]
+	tm_a(ud, Health, tm.hp, true)
+	tm_a(ud, "speed", tm.spd, true)
+	tm_a(ud, "turnrate", tm.turnrate)
+	tm_a(ud, "maxacc", tm.maxacc)
+	tm_a(ud, "idleautoheal", tm.autoheal)
+	if cp then
+		tm_a(cp, "shield_power", tm.shield_power, true)
+		tm_a(cp, "shield_radius", tm.shield_radius, true)
+	end
+	if ud.weapondefs then
+		for _, wd in pairs(ud.weapondefs) do
+			if wd.interceptor ~= 1 and wd.targetable ~= 1 then
+				tm_a(wd, "areaofeffect", tm.aoe, true)
+				tm_a(wd, "range", tm.rng, true)
+				tm_a(wd, "reloadtime", tm.rld)
+				tm_a(wd, "energypershot", tm.energypershot)
+				tm_a(wd, "sprayangle", tm.acc)
+				tm_a(wd, "accuracy", tm.acc)
+				if tm.dmg and wd.damage then
+					for k, v in pairs(wd.damage) do wd.damage[k] = v * tm.dmg end
+				end
+				if tm.impf then wd.impulsefactor = tm.impf end
+				if tm.impb then wd.impulseboost = tm.impb end
+				if tm.fs then wd.firestarter = tm.fs end
+				if tm.wob then wd.wobble = tm.wob end
+				if tm.dnc then wd.dance = tm.dnc end
+			end
+		end
+	end
+end
+
+local function build_rename(name, unit_rarity, at, trait, cl)
+	if not name then return end
+	if cl then
+		table.insert(rename_list, {name, "prefix", "[Cursed Mk." .. cl .. "]"})
+		table.insert(rename_list, {name, "desc_prefix", "Cursed Mk." .. cl .. " "})
+	elseif unit_rarity > 0 then
+		local at_name = at and (" " .. at[1]) or ""
+		local trait_name = trait and (" " .. trait[1]) or ""
+		table.insert(rename_list, {name, "prefix", "[" .. rarities[unit_rarity] .. trait_name .. at_name .. "]"})
+		table.insert(rename_list, {name, "desc_prefix", "Mk." .. unit_rarity .. "   "})
+	else
+		table.insert(rename_list, {name, "prefix", "[Common]"})
+		table.insert(rename_list, {name, "desc_prefix", "Mk." .. unit_rarity .. " "})
+	end
+end
+
 -- Pass 3: apply stat scaling
 for name, ud in pairs(UnitDefs) do
+	if ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true then
 	local unit_rarity = unit_rarities[name] or 0
 	local MCost = ud.metalcost and "metalcost" or "buildcostmetal"
 	local ECost = ud.energycost and "energycost" or "buildcostenergy"
 	local Health = ud.health and "health" or "maxdamage"
 	if not ud.power then ud.power = ud[MCost] + (ud[ECost]/60) end
-	local cp = ud.customparams
-	local bugfix = unit_rarity
-	if not (unit_rarity <= #rarities) then unit_rarity = #rarities end
-	if not (unit_rarity <= 6) and (name == "armcom" or name == "corcom" or name == "legcom") then
-		unit_rarity = 6
+	local rolled_rarity = unit_rarity
+	if unit_rarity > #rarities then unit_rarity = #rarities end
+	if unit_rarity > COMMANDER_RARITY_CAP and COMMANDERS[name] then
+		unit_rarity = COMMANDER_RARITY_CAP
 	end
 	local cl = cursed_units[name]
+	local at = unit_archetypes[name]
+	local trait = unit_traits[name]
 	if cl then
-		if cp then cp.cursed = tostring(cl) end
-		sv(ud, Health, 0.93, cl, true)
-		sv(ud, "speed", 0.97, cl, true)
-		sv(ud, "maxacc", 0.97, cl)
-		sv(ud, "turnrate", 0.97, cl)
-		sv(ud, "sightdistance", 0.97, cl)
-		sv(ud, "radardistance", 0.97, cl)
-		sv(ud, MCost, 0.85, cl, true)
-		sv(ud, ECost, 0.85, cl, true)
-		sv(ud, "buildtime", 0.88, cl)
-		if ud.weapondefs then
-			for _, wd in pairs(ud.weapondefs) do
-				if wd.interceptor ~= 1 and wd.targetable ~= 1 then
-					sv(wd, "range", 0.97, cl, true)
-					sv(wd, "reloadtime", 1.04, cl)
-					if wd.damage then
-						for k, v in pairs(wd.damage) do
-							wd.damage[k] = set_v(v, 0.94, cl)
-						end
-					end
-				end
-			end
-		end
-		if name then
-			table.insert(rename_list, {name, "prefix", "[Cursed Mk." .. cl .. "]"})
-			table.insert(rename_list, {name, "desc_prefix", "Cursed Mk." .. cl .. " "})
-		end
-	elseif bugfix > 0 then
-		if cp then cp.rarity = tostring(unit_rarity) end
-		local at = unit_archetypes[name]
-		local m_hp  = at and at[2] or 1.1
-		local m_spd = at and at[3] or 1.05
-		local m_dmg = at and at[4] or 1.05
-		local m_rng = at and at[5] or 1.05
-		local m_rld = at and at[6] or 0.95
-		local m_aoe = at and at[7] or 1.05
-		local m_acc = at and at[8] or 0.97
-		local R = unit_rarity
-		sv(ud, "power", 1.2, R)
-		sv(ud, "speed", m_spd, R, true)
-		sv(ud, "maxacc", 1.05, R)
-		sv(ud, "maxdec", 1.05, R)
-		sv(ud, "turnrate", 1.05, R)
-		sv(ud, "sightdistance", 1.05, R)
-		sv(ud, "radardistance", 1.1, R)
-		sv(ud, Health, m_hp, R, true)
-		sv(ud, "idleautoheal", 1.1, R)
-		sv(ud, "energymake", 1.04, R)
-		sv(ud, "extractsmetal", 1.1, R)
-		sv(ud, "energyupkeep", 1.04, R)
-		sv(ud, "tidalgenerator", 1.04, R)
-		sv(ud, "windgenerator", 1.04, R)
-		if ud.windgenerator and not cp.energymultiplier then sv(ud, MCost, 0.97, R, true) end
-		if ud.tidalgenerator or ud.windgenerator or ud.builder == true or (not ud.speed and not ud.weapondefs) then
-			sv(ud, MCost, 0.97, R, true)
-			sv(ud, ECost, 0.98, R, true)
-			sv(ud, "buildtime", 0.98, R)
-			sv(ud, "workertime", 1.05, R, true)
-			sv(ud, "builddistance", 1.05, R, true)
-		else
-			sv(ud, MCost, 1.035, R, true)
-			sv(ud, ECost, 1.04, R, true)
-			sv(ud, "buildtime", 1.05, R)
-			sv(ud, "workertime", 1.05, R, true)
-			sv(ud, "builddistance", 1.05, R, true)
-		end
-		if cp then
-			sv(cp, "energyconv_efficiency", 1.04, R)
-			sv(cp, "energyconv_capacity", 1.04, R, true)
-			sv(cp, "shield_power", 1.1, R, true)
-			sv(cp, "shield_radius", 1.05, R, true)
-			sv(cp, "energymultiplier", 1.04, R, true)
-		end
-		if ud.weapondefs then
-			for _, wd in pairs(ud.weapondefs) do
-				if wd.interceptor == 1 or wd.targetable == 1 then
-					sv(wd, "coverage", 1.02, R, true)
-					sv(wd.damage, "default", 1.1, R)
-					sv(wd, "areaofeffect", 1.01, R)
-				else
-					local wcp = wd.customparams
-					if not wd.reloadtime or wd.reloadtime < 0.034 then wd.reloadtime = 0.034 end
-					if wd.burstrate and wd.burstrate < 0.034 then wd.burstrate = 0.034 end
-					if wd.burst and wd.burstrate then
-						if wd.burst*wd.burstrate > wd.reloadtime then wd.reloadtime = wd.burst*wd.burstrate end
-					end
-					if wd.beamtime then
-						if wd.beamtime > wd.reloadtime then wd.reloadtime = wd.beamtime end
-					end
-
-					local is_cont = false
-					if wd.burstrate and wd.burst and wd.reloadtime then
-						local brb = wd.burstrate*wd.burst
-						if brb/wd.reloadtime >= 0.98 or brb >= wd.reloadtime then
-							is_cont = true
-						end
-					end
-					local is_cont_b = false
-					if wd.beamtime and wd.reloadtime then
-						if wd.beamtime/wd.reloadtime >= 0.90 or wd.beamtime >= wd.reloadtime then
-							is_cont_b = true
-						end
-					end
-					sv(wd, "reloadtime", m_rld, R)
-					sv(wd, "burstrate", m_rld, R)
-					sv(wd, "areaofeffect", m_aoe, R)
-					sv(wd, "weaponvelocity", 1.05, R)
-					sv(wd, "range", m_rng, R, true)
-					sv(wd, "flighttime", 1.05, R)
-					sv(wd, "sprayangle", m_acc, R)
-					sv(wd, "accuracy", m_acc, R)
-					sv(wd, "energypershot", 1.1, R, true)
-					sv(wd, "metalpershot", 1.05, R, true)
-					sv(wd, "stockpiletime", 0.96, R, true)
-					sv(wd, "startvelocity", 1.05, R)
-					sv(wd, "turnrate", 1.03, R)
-					sv(wd, "weaponacceleration", 1.05, R)
-					sv(wd, "laserflaresize", 1.04, R)
-					sv(wd, "size", 1.09, R)
-					sv(wd, "thickness", 1.06, R)
-
-					if wcp then
-						sv(wcp, "overrange_distance", m_rng, R, true)
-						sv(wcp, "controlradius", m_rng, R, true)
-						sv(wcp, "engagementrange", m_rng, R, true)
-						local sr = tonumber(wcp.spark_range)
-						if sr then wcp.spark_range = tostring(set_v(sr, 1.05, R, true)) end
-						sv(wcp, "area_onhit_damage", 1.05, R, true)
-						sv(wcp, "area_onhit_range", 1.05, R, true)
-					end
-
-					if wd.damage then
-						local dm = 1
-						local dsm = 0
-						local rt = wd.reloadtime or 1
-						local bt = wd.beamtime or 0
-						local br = wd.burstrate or 1
-						local b = wd.burst or 1
-
-						if rt < 0.034 then
-							dm = dm + (0.034/rt) -1
-							wd.reloadtime = 0.034
-							rt = 0.034
-						end
-						local is_sweepfire = wcp and wcp.sweepfire
-						if is_sweepfire or name == "armbeamer" then
-							wd.reloadtime = wd.reloadtime or rt
-							rt = wd.reloadtime
-						end
-						if bt > rt then
-							dm = dm + (bt/rt) -1
-							wd.reloadtime = bt
-							rt = bt
-						end
-						if br < 0.034 then
-							dm = dm + (0.034/br) -1
-							wd.burstrate = 0.034
-							br = 0.034
-						end
-						local brb = br*b
-						if wd.burstrate and wd.burst and brb > rt then
-							dm = dm + (brb/rt) -1
-							wd.reloadtime = brb
-						end
-						for k, v in pairs(wd.damage) do
-							if v == "commanders" then
-								wd.damage[k] = set_v(v, 1.02+dsm, R, false, dm)
-							else
-								wd.damage[k] = set_v(v, m_dmg+dsm, R, false, dm)
-							end
-						end
-					end
-					local sh = wd.shield
-					if sh then
-						sv(sh, "power", 1.1, R, true)
-						sv(sh, "powerregen", 1.1, R, true)
-						sv(sh, "radius", 1.05, R, true)
-						sv(sh, "force", 1.05, R)
-						sv(sh, "powerregenenergy", 0.99, R, true)
-					end
-					if is_cont then wd.reloadtime = wd.burst*wd.burstrate end
-					if is_cont_b then wd.reloadtime = wd.beamtime end
-				end
-			end
-		end
-		-- Apply trait flat multipliers after rarity+archetype scaling
-		local trait = unit_traits[name]
-		if trait then
-			for k, v in pairs(trait[2]) do ud[k] = v end
-			local tm = trait[3]
-			tm_a(ud, Health, tm.hp, true)
-			tm_a(ud, "speed", tm.spd, true)
-			tm_a(ud, "turnrate", tm.turnrate)
-			tm_a(ud, "maxacc", tm.maxacc)
-			tm_a(ud, "idleautoheal", tm.autoheal)
-			if cp then
-				tm_a(cp, "shield_power", tm.shield_power, true)
-				tm_a(cp, "shield_radius", tm.shield_radius, true)
-			end
-			if ud.weapondefs then
-				for wn, wd in pairs(ud.weapondefs) do
-					if wd.interceptor ~= 1 and wd.targetable ~= 1 then
-						tm_a(wd, "areaofeffect", tm.aoe, true)
-						tm_a(wd, "range", tm.rng, true)
-						tm_a(wd, "reloadtime", tm.rld)
-						tm_a(wd, "energypershot", tm.energypershot)
-						tm_a(wd, "sprayangle", tm.acc)
-						tm_a(wd, "accuracy", tm.acc)
-						if tm.dmg and wd.damage then
-							for k, v in pairs(wd.damage) do wd.damage[k] = v * tm.dmg end
-						end
-						if tm.impf then wd.impulsefactor = tm.impf end
-						if tm.impb then wd.impulseboost = tm.impb end
-						if tm.fs then wd.firestarter = tm.fs end
-						if tm.wob then wd.wobble = tm.wob end
-						if tm.dnc then wd.dance = tm.dnc end
-					end
-				end
-			end
-		end
-		if name then
-			local at_name = at and (" " .. at[1]) or ""
-			local trait_name = trait and (" " .. trait[1]) or ""
-			table.insert(rename_list, {name, "prefix", "[" .. rarities[unit_rarity] .. trait_name .. at_name .. "]"})
-			table.insert(rename_list, {name, "desc_prefix", "Mk." .. unit_rarity .. "   "})
-		end
-	else
-		if name then
-			table.insert(rename_list, {name, "prefix", "[Common]"})
-			table.insert(rename_list, {name, "desc_prefix", "Mk." .. unit_rarity .. " "})
-		end
+		apply_curse_scaling(ud, cl, MCost, ECost, Health)
+	elseif rolled_rarity > 0 then
+		apply_unit_scaling(ud, unit_rarity, at, MCost, ECost, Health)
+		apply_weapon_scaling(name, ud, unit_rarity, at)
+		if trait then apply_traits(ud, trait, Health) end
+	end
+	build_rename(name, unit_rarity, at, trait, cl)
 	end
 end
 

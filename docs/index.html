@@ -24,13 +24,14 @@
       <p>This mod randomizes every unit in the game with a rarity tier (Common through Beyond All Reason). Higher rarity units get exponentially stronger stats &mdash; more HP, damage, range, speed &mdash; but also cost more to build. The system has several layers:</p>
       <ul>
         <li><strong>Guaranteed picks</strong> &mdash; Each factory gets at least one high-rarity combat unit so every player has something spicy to build.</li>
-        <li><strong>Archetypes</strong> &mdash; Rarity 5+ combat units roll an archetype (Glass Cannon, Tank, Sniper, Brawler) that skews their stat scaling. Turrets get their own set (Fortress, Watchtower, Suppressor).</li>
-        <li><strong>Traits</strong> &mdash; Rarity 5+ units with an archetype have a 50% chance to roll a special trait that applies flat bonuses on top of rarity scaling. See the trait table below.</li>
+        <li><strong>Archetypes</strong> &mdash; Rarity 5+ combat units roll an archetype (Glass Cannon, Tank, Sniper, Brawler) that skews their stat scaling. Turrets get their own set (Fortress, Watchtower, Suppressor). Buildings get their own (Efficient, Fortified, Overclocked).</li>
+        <li><strong>Traits</strong> &mdash; Rarity 5+ units with an archetype have a 50% chance to roll a special trait that applies flat bonuses on top of rarity scaling. Combat units get archetype-specific traits; buildings get category-specific traits (e.g. Deep Bore for mexes, Surge for energy). See trait tables below.</li>
         <li><strong>Cursed units</strong> &mdash; A small percentage of combat units become cursed: weaker stats but much cheaper to build. Interesting strategic trade-offs.</li>
+        <li><strong>Building traits</strong> &mdash; Passive buildings get category-specific traits including Metamorphic (auto-evolves T1 into T2), Volatile (death explosion), Shroud (adds radar jamming), and more.</li>
       </ul>
 
-      <h3>Traits</h3>
-      <p>Each archetype has its own pool of traits. When a unit qualifies, one trait is randomly selected from its archetype's pool.</p>
+      <h3>Combat Traits</h3>
+      <p>Each combat archetype has its own pool of traits. When a unit qualifies, one trait is randomly selected from its archetype's pool.</p>
       <table class="trait-table">
         <thead><tr><th>Trait</th><th>Archetypes</th><th>Effect</th></tr></thead>
         <tbody>
@@ -46,27 +47,190 @@
           <tr><td>Berserker</td><td>Brawler, Suppressor</td><td>+20&ndash;30% damage, +30% AoE, worse accuracy.</td></tr>
           <tr><td>Siege</td><td>Brawler, Suppressor</td><td>+40% AoE, +15% damage, &minus;15% speed (Brawler) or worse accuracy (Suppressor).</td></tr>
           <tr><td>Shielded</td><td>Fortress</td><td>+40% shield power, +20% shield radius.</td></tr>
-          <tr><td>Plague</td><td>Glass Cannon, Brawler</td><td>Weapons set fires on impact (burns wrecks, denies reclaim). +15% AoE, &minus;10% damage.</td></tr>
           <tr><td>Siren</td><td>Fortress, Suppressor</td><td>Extreme knockback on hit &mdash; sends enemies flying. +15% AoE, &minus;30% damage.</td></tr>
-          <tr><td>GravWell</td><td>Tank, Watchtower</td><td>Shots pull enemies toward impact point (negative impulse). +40% AoE, &minus;20% damage.</td></tr>
-          <tr><td>Bouncer</td><td>Glass Cannon, Brawler</td><td>Massive knockback, sends enemies across the map. &minus;40% damage.</td></tr>
-          <tr><td>Drunk</td><td>Sniper, Suppressor</td><td>Projectiles wobble and dance erratically. Much worse accuracy, +30% AoE to compensate.</td></tr>
         </tbody>
       </table>
+
+      <h3>Building Traits</h3>
+      <p>Passive buildings get category-specific traits. Buildings use 3 archetypes: <strong>Efficient</strong> (cheap, moderate output), <strong>Fortified</strong> (tanky), <strong>Overclocked</strong> (fragile, high output, high upkeep).</p>
+      <table class="trait-table">
+        <thead><tr><th>Trait</th><th>Category</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Deep Bore</td><td>Metal Extractor</td><td>+50% extraction, +30% build time.</td></tr>
+          <tr><td>Volatile Vein</td><td>Metal Extractor</td><td>+30% extraction, explodes on death.</td></tr>
+          <tr><td>Metamorphic</td><td>Metal Extractor, Energy</td><td>Auto-evolves into T2 version after 5 minutes.</td></tr>
+          <tr><td>Surge</td><td>Energy</td><td>+60% energy output, explodes on death.</td></tr>
+          <tr><td>Efficient Core</td><td>Energy</td><td>&minus;30% cost, +20% energy output.</td></tr>
+          <tr><td>Gale Force</td><td>Wind/Tidal</td><td>+80% output, &minus;30% HP. Fragile but productive.</td></tr>
+          <tr><td>Anchored</td><td>Wind/Tidal</td><td>+50% HP, +20% output, &minus;20% cost. Sturdy and cheap.</td></tr>
+          <tr><td>Refined Process</td><td>Converter</td><td>+30% efficiency, +20% capacity.</td></tr>
+          <tr><td>Bulk Conversion</td><td>Converter</td><td>2&times; capacity, &minus;10% efficiency.</td></tr>
+          <tr><td>All-Seeing</td><td>Radar</td><td>2&times; radar range, 2&times; LOS.</td></tr>
+          <tr><td>Shroud</td><td>Radar</td><td>Gains radar jamming at half radar range.</td></tr>
+          <tr><td>Resilient</td><td>Radar, Sonar</td><td>3&times; HP, 70% EMP resistance.</td></tr>
+          <tr><td>Deep Scan</td><td>Sonar</td><td>2&times; sonar range, +50% LOS.</td></tr>
+          <tr><td>Blackout</td><td>Jammer</td><td>+80% jam range, +40% energy upkeep.</td></tr>
+          <tr><td>Stealth Field</td><td>Jammer</td><td>+30% jam range, +50% HP, &minus;10% upkeep.</td></tr>
+          <tr><td>Rush Order</td><td>Factory</td><td>+40% build speed, +50% energy upkeep.</td></tr>
+          <tr><td>Long Arm</td><td>Factory</td><td>+80% build distance, +30% LOS.</td></tr>
+          <tr><td>Bunker</td><td>Factory</td><td>2.5&times; HP, +50% LOS.</td></tr>
+          <tr><td>Vault</td><td>Storage</td><td>3&times; capacity, +50% HP.</td></tr>
+          <tr><td>Volatile Reserve</td><td>Storage</td><td>2&times; capacity, explodes on death.</td></tr>
+          <tr><td>Precision</td><td>Nano Turret</td><td>+80% build range, +20% build speed.</td></tr>
+          <tr><td>Frenzy</td><td>Nano Turret</td><td>2&times; build speed, &minus;40% HP.</td></tr>
+          <tr><td>Fortified Builder</td><td>Nano Turret</td><td>2&times; HP, +30% range, &minus;10% speed.</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Trait Tree</h3>
+      <div class="trait-tree">
+        <div class="tree-root">Rarity 5+ Unit</div>
+        <ul class="tree">
+          <li>
+            <span class="tree-branch">Combat Unit</span>
+            <ul>
+              <li><span class="tree-arch">Glass Cannon</span> <span class="tree-stats">HP 0.88 &middot; Dmg 1.12 &middot; Rld 0.91</span>
+                <ul class="tree-traits">
+                  <li>Phantom <em>cloak, &minus;15% HP</em></li>
+                  <li>Volatile <em>+30% dmg, &minus;40% HP</em></li>
+                  <li>Overcharged <em>&minus;20% reload, +50% energy/shot</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Tank</span> <span class="tree-stats">HP 1.22 &middot; Dmg 1.01 &middot; Rld 0.97</span>
+                <ul class="tree-traits">
+                  <li>Juggernaut <em>+60% HP, &minus;30% spd</em></li>
+                  <li>Regenerator <em>3&times; autoheal</em></li>
+                  <li>Fortified <em>+30% HP, +20% reload</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Sniper</span> <span class="tree-stats">HP 1.03 &middot; Rng 1.14 &middot; Acc 0.91</span>
+                <ul class="tree-traits">
+                  <li>Phantom <em>cloak, &minus;10% HP</em></li>
+                  <li>Marksman <em>+30% rng, +30% acc, &minus;30% AoE</em></li>
+                  <li>Piercing <em>+20% dmg, &minus;50% AoE</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Brawler</span> <span class="tree-stats">Spd 1.10 &middot; AoE 1.10 &middot; Rld 0.88</span>
+                <ul class="tree-traits">
+                  <li>Swift <em>+40% spd, &minus;30% HP</em></li>
+                  <li>Berserker <em>+20% dmg, +30% AoE</em></li>
+                  <li>Siege <em>+40% AoE, +15% dmg, &minus;15% spd</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Fortress</span> <span class="tree-stats">HP 1.20 &middot; Dmg 1.08</span>
+                <ul class="tree-traits">
+                  <li>Juggernaut <em>+60% HP</em></li>
+                  <li>Shielded <em>+40% shield, +20% radius</em></li>
+                  <li>Siren <em>knockback, +15% AoE</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Watchtower</span> <span class="tree-stats">HP 1.03 &middot; Rng 1.14 &middot; Acc 0.91</span>
+                <ul class="tree-traits">
+                  <li>Phantom <em>cloak, &minus;10% HP</em></li>
+                  <li>Marksman <em>+30% rng, +30% acc</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-arch">Suppressor</span> <span class="tree-stats">AoE 1.12 &middot; Rld 0.88</span>
+                <ul class="tree-traits">
+                  <li>Siege <em>+40% AoE, +15% dmg</em></li>
+                  <li>Berserker <em>+30% dmg, +30% AoE</em></li>
+                  <li>Siren <em>knockback, +15% AoE</em></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+          <li>
+            <span class="tree-branch">Passive Building</span>
+            <ul>
+              <li><span class="tree-arch">Efficient</span> <span class="tree-stats">HP 0.9 &middot; Cost 0.8 &middot; Output 1.15</span></li>
+              <li><span class="tree-arch">Fortified</span> <span class="tree-stats">HP 1.5 &middot; Cost 1.1 &middot; Output 1.0</span></li>
+              <li><span class="tree-arch">Overclocked</span> <span class="tree-stats">HP 0.8 &middot; Output 1.4 &middot; Upkeep 1.3</span></li>
+            </ul>
+            <ul>
+              <li><span class="tree-cat">Metal Extractor</span>
+                <ul class="tree-traits">
+                  <li>Deep Bore <em>+50% extraction</em></li>
+                  <li>Volatile Vein <em>+30% extraction, death AoE</em></li>
+                  <li>Metamorphic <em>evolves to T2</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Energy</span>
+                <ul class="tree-traits">
+                  <li>Surge <em>+60% output, death AoE</em></li>
+                  <li>Efficient Core <em>&minus;30% cost, +20% output</em></li>
+                  <li>Metamorphic <em>evolves to next tier</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Wind / Tidal</span>
+                <ul class="tree-traits">
+                  <li>Gale Force <em>+80% output, &minus;30% HP</em></li>
+                  <li>Anchored <em>+50% HP, +20% output</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Converter</span>
+                <ul class="tree-traits">
+                  <li>Refined Process <em>+30% eff, +20% cap</em></li>
+                  <li>Bulk Conversion <em>2&times; cap, &minus;10% eff</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Radar</span>
+                <ul class="tree-traits">
+                  <li>All-Seeing <em>2&times; radar + LOS</em></li>
+                  <li>Shroud <em>gains jamming</em></li>
+                  <li>Resilient <em>3&times; HP, EMP resist</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Sonar</span>
+                <ul class="tree-traits">
+                  <li>Deep Scan <em>2&times; sonar</em></li>
+                  <li>Resilient <em>3&times; HP, EMP resist</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Jammer</span>
+                <ul class="tree-traits">
+                  <li>Blackout <em>+80% jam range</em></li>
+                  <li>Stealth Field <em>+30% jam, tanky</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Factory</span>
+                <ul class="tree-traits">
+                  <li>Rush Order <em>+40% build speed</em></li>
+                  <li>Long Arm <em>+80% build range</em></li>
+                  <li>Bunker <em>2.5&times; HP</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Storage</span>
+                <ul class="tree-traits">
+                  <li>Vault <em>3&times; capacity, +50% HP</em></li>
+                  <li>Volatile Reserve <em>2&times; cap, death AoE</em></li>
+                </ul>
+              </li>
+              <li><span class="tree-cat">Nano Turret</span>
+                <ul class="tree-traits">
+                  <li>Precision <em>+80% range, +20% speed</em></li>
+                  <li>Frenzy <em>2&times; speed, &minus;40% HP</em></li>
+                  <li>Fortified Builder <em>2&times; HP, +30% range</em></li>
+                </ul>
+              </li>
+            </ul>
+          </li>
+        </ul>
+      </div>
 
       <h3>How to use</h3>
       <ol>
         <li>Configure the parameters below and click Generate.</li>
         <li>Copy the output string.</li>
-        <li>In the BAR lobby, paste it with: <code>!bset tweakdefs0 &lt;paste&gt;</code></li>
-        <li>For faction buffs, use a second slot: <code>!bset tweakdefs1 &lt;paste&gt;</code></li>
+        <li>In the BAR lobby, paste the rarity mod with: <code>!bset tweakdefs &lt;paste&gt;</code></li>
+        <li>The building mod goes in a second slot: <code>!bset tweakdefs1 &lt;paste&gt;</code></li>
+        <li>For faction buffs, use a third slot: <code>!bset tweakdefs2 &lt;paste&gt;</code></li>
       </ol>
 
       <h3>Faction Buff</h3>
-      <p>The faction buff is a separate tweakdefs slot that flat-boosts all units of one faction. Use it for <strong>players vs boosted AI</strong> games &mdash; give the AI faction a stat multiplier to make it a tougher opponent without changing the rarity rolls. You can also use it for asymmetric PvP where one side gets a handicap advantage. Load it in <code>tweakdefs1</code> alongside the rarity mod in <code>tweakdefs0</code>.</p>
+      <p>The faction buff is a separate tweakdefs slot that flat-boosts all units of one faction. Use it for <strong>players vs boosted AI</strong> games &mdash; give the AI faction a stat multiplier to make it a tougher opponent without changing the rarity rolls. You can also use it for asymmetric PvP where one side gets a handicap advantage. Load it in <code>tweakdefs2</code> alongside the rarity mod in <code>tweakdefs</code> and building mod in <code>tweakdefs1</code>.</p>
 
       <h3>Renamer widget</h3>
-      <p>To see rarity names on units in-game, install the renamer widget from the <a href="https://discord.com/channels/549281623154229250/1468742915315470591/1468742915315470591" target="_blank" rel="noopener">BAR Discord thread</a>. Drop the widget <code>.lua</code> file into your <code>data/LuaUI/Widgets/</code> folder and enable it in-game.</p>
+      <p>To see rarity names on units in-game, install the renamer widget from the <a href="https://discord.com/channels/549281623154229250/1468742915315470591/1489715775676616754" target="_blank" rel="noopener">BAR Discord thread</a>. Drop the widget <code>.lua</code> file into your <code>data/LuaUI/Widgets/</code> folder and enable it in-game.</p>
     </section>
 
     <div class="tabs">
@@ -176,19 +340,36 @@
       <button class="generate-btn" id="gen-welcome">Generate Welcome Message</button>
     </div>
 
-    <div class="output-section">
+    <div class="output-section" id="output-section-0">
+      <div class="output-header">
+        <span class="output-label">Units &mdash; paste with: <code>!bset tweakdefs &lt;paste&gt;</code></span>
+        <span class="size-counter ok" id="size-counter-0">0 / 16,384 chars</span>
+      </div>
+      <textarea id="output-0" readonly></textarea>
+      <button class="copy-btn" data-target="output-0">Copy to Clipboard</button>
+    </div>
+
+    <div class="output-section" id="output-section-1">
+      <div class="output-header">
+        <span class="output-label">Buildings &mdash; paste with: <code>!bset tweakdefs1 &lt;paste&gt;</code></span>
+        <span class="size-counter ok" id="size-counter-1">0 / 16,384 chars</span>
+      </div>
+      <textarea id="output-1" readonly></textarea>
+      <button class="copy-btn" data-target="output-1">Copy to Clipboard</button>
+    </div>
+
+    <div class="output-section" id="output-section-single">
       <div class="output-header">
         <span class="size-counter ok" id="size-counter">0 / 16,384 chars</span>
-        <span class="usage-hint" id="usage-hint">!bset tweakdefs0 &lt;paste&gt;</span>
       </div>
       <textarea id="output" readonly></textarea>
-      <button class="copy-btn" id="copy-btn">Copy to Clipboard</button>
+      <button class="copy-btn" data-target="output">Copy to Clipboard</button>
     </div>
   </div>
 
   <script>
     var v = new Date().getTime();
-    ["js/pipeline.js","js/rarity-template.js","js/faction-template.js","js/app.js"].forEach(function(s) {
+    ["js/pipeline.js","js/rarity-template.js","js/buildings-template.js","js/faction-template.js","js/app.js"].forEach(function(s) {
       document.write('<script src="' + s + '?v=' + v + '"><\/script>');
     });
   </script>

@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
       panels.forEach(function(p) { p.classList.remove('active'); });
       btn.classList.add('active');
       document.getElementById(btn.dataset.panel).classList.add('active');
-      document.querySelector('.output-section').classList.remove('visible');
+      hideAllOutputs();
     });
   });
 
@@ -59,7 +59,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
 
-  // Generate rarity mod
+  // Generate rarity mod (both units + buildings)
   document.getElementById('gen-rarity').addEventListener('click', function() {
     var params = {
       rarity_chance: parseFloat(document.getElementById('rarity_chance').value),
@@ -74,8 +74,9 @@ document.addEventListener('DOMContentLoaded', function() {
       cor_ceil: parseInt(document.getElementById('cor_ceil').value),
       leg_ceil: parseInt(document.getElementById('leg_ceil').value)
     };
-    var b64 = RarityTemplate.build(params);
-    displayOutput(b64, 'tweakdefs0');
+    var unitsB64 = RarityTemplate.build(params);
+    var buildingsB64 = BuildingsTemplate.build(params);
+    displayDualOutput(unitsB64, buildingsB64);
   });
 
   // Generate faction buff
@@ -84,20 +85,16 @@ document.addEventListener('DOMContentLoaded', function() {
     var faction = active ? active.dataset.faction : 'leg';
     var multiplier = parseFloat(document.getElementById('faction_multiplier').value);
     var b64 = FactionTemplate.build(faction, multiplier);
-    displayOutput(b64, 'tweakdefs1');
+    displayOutput(b64, 'tweakdefs2');
   });
 
-  // Welcome message
-  var welcomeMsg = "!welcome-message Welcome to BEYOND ALL RANDOM!\n" +
-    "Every unit gets a random rarity tier — higher rarity = stronger stats but higher cost to build.\n" +
-    "High-rarity combat units roll archetypes (Glass Cannon, Tank, Sniper, Brawler) and may get special traits like Phantom (cloaking), Juggernaut (+60% HP), or Plague (sets fires on impact). Some units are cursed — weaker but much cheaper!\n" +
-    "To see unit rarities in-game you need the Tweakdefs Bridge widget.\n" +
-    "Get it here: https://discord.com/channels/549281623154229250/1468742915315470591\n" +
-    "Put the Tweakdefs_bridge.lua file into Beyond-All-Reason/data/LuaUI/Widgets/ (create the Widgets folder if it's missing).\n" +
-    "In-game go to Settings → Custom and toggle ON \"Tweakdefs Bridge\".\n" +
-    "Press ALT+M to toggle between default and modified unit names. Don't spam it — UI reload takes ~3 sec.\n" +
-    "If it doesn't work, restart your game.\n" +
-    "Config builder & more info: https://bazilio91.github.io/beyond-all-random/";
+  // Welcome message - must be a single line for lobby chat
+  var welcomeMsg = "!welcome-message Welcome to BEYOND ALL RANDOM! " +
+    "Every unit gets a random rarity tier — higher rarity = stronger stats but higher cost. " +
+    "Combat units get archetypes (Glass Cannon, Tank, Sniper, Brawler) and traits like Phantom (cloaking) or Juggernaut (+60% HP). " +
+    "Buildings get traits too — Metamorphic mexes auto-evolve to T2! Some units are cursed — weaker but cheaper. " +
+    "To see rarities in-game, get the Tweakdefs Bridge widget: https://discord.com/channels/549281623154229250/1468742915315470591/1489715775676616754 " +
+    "Config builder: https://bazilio91.github.io/beyond-all-random/";
 
   document.getElementById('welcome-preview').textContent = welcomeMsg;
 
@@ -105,38 +102,56 @@ document.addEventListener('DOMContentLoaded', function() {
     displayOutput(welcomeMsg, 'welcome');
   });
 
+  function hideAllOutputs() {
+    document.getElementById('output-section-0').classList.remove('visible');
+    document.getElementById('output-section-1').classList.remove('visible');
+    document.getElementById('output-section-single').classList.remove('visible');
+  }
+
+  function setSizeCounter(el, len) {
+    el.textContent = len.toLocaleString() + ' / 16,384 chars';
+    el.className = 'size-counter ' + (len > 16384 ? 'over' : len > 14000 ? 'warn' : 'ok');
+  }
+
+  function displayDualOutput(unitsText, buildingsText) {
+    hideAllOutputs();
+    document.getElementById('output-0').value = '!bset tweakdefs ' + unitsText;
+    document.getElementById('output-1').value = '!bset tweakdefs1 ' + buildingsText;
+    setSizeCounter(document.getElementById('size-counter-0'), unitsText.length);
+    setSizeCounter(document.getElementById('size-counter-1'), buildingsText.length);
+    document.getElementById('output-section-0').classList.add('visible');
+    document.getElementById('output-section-1').classList.add('visible');
+  }
+
   function displayOutput(text, slot) {
-    var section = document.querySelector('.output-section');
+    hideAllOutputs();
+    var section = document.getElementById('output-section-single');
     var textarea = document.getElementById('output');
     var counter = document.getElementById('size-counter');
-    var hint = document.getElementById('usage-hint');
 
-    textarea.value = text;
-    section.classList.add('visible');
-
-    var len = text.length;
     if (slot === 'welcome') {
-      counter.textContent = len + ' chars';
+      textarea.value = text;
+      counter.textContent = text.length + ' chars';
       counter.className = 'size-counter ok';
-      hint.textContent = 'Paste into lobby chat';
     } else {
-      counter.textContent = len.toLocaleString() + ' / 16,384 chars';
-      counter.className = 'size-counter ' + (len > 16384 ? 'over' : len > 14000 ? 'warn' : 'ok');
-      hint.textContent = '!bset ' + slot + ' <paste>';
+      textarea.value = '!bset ' + slot + ' ' + text;
+      setSizeCounter(counter, text.length);
     }
+    section.classList.add('visible');
   }
 
   // Copy to clipboard
-  document.getElementById('copy-btn').addEventListener('click', function() {
-    var textarea = document.getElementById('output');
-    var btn = this;
-    navigator.clipboard.writeText(textarea.value).then(function() {
-      btn.textContent = 'Copied!';
-      btn.classList.add('copied');
-      setTimeout(function() {
-        btn.textContent = 'Copy to Clipboard';
-        btn.classList.remove('copied');
-      }, 2000);
+  document.querySelectorAll('.copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var el = document.getElementById(btn.dataset.target);
+      navigator.clipboard.writeText(el.value).then(function() {
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy to Clipboard';
+          btn.classList.remove('copied');
+        }, 2000);
+      });
     });
   });
 });
