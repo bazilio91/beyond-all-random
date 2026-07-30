@@ -295,3 +295,10 @@ for i, entry in pairs(rename_list) do
 	Spring.Echo("/("..entry[1].."/-"..entry[2].."/-"..entry[3].."/)")
 end
 Spring.Echo("tweakdefs_rename_end")
+
+-- Tweakdefs Bridge v6 count protocol: the widget only reads the last N rename
+-- blocks, where N comes from the newest count line. Every tweakdefs slot runs in
+-- the same Lua state, so we keep a running total and each block re-prints it.
+local rename_blocks = (rawget(_G, "BAR_RENAME_BLOCKS") or 0) + 1
+rawset(_G, "BAR_RENAME_BLOCKS", rename_blocks)
+Spring.Echo("tweakdefs_rename_block_count:" .. rename_blocks)

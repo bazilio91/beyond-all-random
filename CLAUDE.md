@@ -56,9 +56,26 @@ Handles buildings with no `speed`, no `weapondefs`, and `builder ~= true`. Has i
 
 **Building traits (25 across 10 categories):** Category-specific traits including stat multipliers, death AoE explosions (`area_ondeath_*` customparams), unit evolution (`evolution_target/condition/timer`), jamming capability, and EMP resistance (`paralyzemultiplier`).
 
+### Tweakdefs Bridge protocol (external widget)
+
+In-game renaming is done by **Tweakdefs Bridge**, Ambo's widget (not ours). We ship a copy in `docs/widgets/Tweakdefs_bridge.lua`; the upstream source is Ambo's thread on the BAR Discord (`#📝｜widgets` → Tweakdefs Renamer, https://discord.com/channels/549281623154229250/1468742915315470591). **v6 (`date = '2026-05-17'`) is the minimum.**
+
+Each mod file prints one rename block to infolog:
+
+```
+tweakdefs_rename_get_ready
+/(<unitDefName>/-<command>/-<text>/)      -- command: rename | prefix | desc_change | desc_prefix
+tweakdefs_rename_end
+tweakdefs_rename_block_count:<N>
+```
+
+v6 takes the **last** `block_count` line as an anchor and reads the last N complete blocks; if the anchor falls outside that group's scope (`GROUP_WINDOW_BYTES = 500000`) it falls back to a single block. Since the mod is split across two tweakdefs slots, omitting the count made the widget drop half the prefixes.
+
+`mod.lua` and `mod_buildings.lua` therefore keep a running counter in `_G.BAR_RENAME_BLOCKS` and re-print the total after their own block. All `tweakdefs*` slots execute via one `loadstring` in a shared Lua state (`Beyond-All-Reason/gamedata/unitdefs_post.lua`), sorted by slot index, so the last block to run prints the correct total — and a solo load still reports `1`. Any new file that emits renames must join the same counter.
+
 ### Other files
 
-- **random_stats_viewer.lua** — In-game UI widget. Parses `infolog.txt` to read rarity assignments, displays units organized by faction with color-coded rarity, stats, and factory build trees. Toggle with `/unitstats`.
+- **random_stats_viewer.lua** — In-game UI widget. Parses `infolog.txt` to read rarity assignments, displays units organized by faction with color-coded rarity, stats, and factory build trees. Toggle with `/unitstats`. Does its own infolog parsing and does not depend on the bridge.
 
 - **disable_t3_air.lua** — Makes T3 air units prohibitively expensive.
 

@@ -93,7 +93,7 @@ document.addEventListener('DOMContentLoaded', function() {
     "Every unit gets a random rarity tier — higher rarity = stronger stats but higher cost. " +
     "Combat units get archetypes (Glass Cannon, Tank, Sniper, Brawler) and traits like Phantom (cloaking) or Juggernaut (+60% HP). " +
     "Buildings get traits too — Metamorphic mexes auto-evolve to T2! Some units are cursed — weaker but cheaper. " +
-    "To see rarities in-game, get the Tweakdefs Bridge widget: https://discord.com/channels/549281623154229250/1468742915315470591/1489715775676616754 " +
+    "To see rarities in-game, get the Tweakdefs Bridge widget (v6+): https://bazilio91.github.io/beyond-all-random/widgets/Tweakdefs_bridge.lua " +
     "Config builder: https://bazilio91.github.io/beyond-all-random/";
 
   document.getElementById('welcome-preview').textContent = welcomeMsg;
