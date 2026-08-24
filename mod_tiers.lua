@@ -1,4 +1,4 @@
---BaRandom Tiers v1 by LoH
+--BaRandom Tiers v31 by LoH
 local COMMANDERS = {armcom=true, corcom=true, legcom=true}
 
 local TIER = math.random(1, 3)
