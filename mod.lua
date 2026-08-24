@@ -17,6 +17,11 @@ local TRAIT_MIN_RARITY = 5
 local rf={0,0,0}
 local rx={28,28,28}
 
+local SKIP_PVE = true
+local function is_pve(n)
+	return SKIP_PVE and (n:find("raptor") or n:find("scav") or n:find("critter")) ~= nil
+end
+
 local ENGINE_MIN_RELOAD = 0.034
 local BEAM_CONT_THRESHOLD = 0.90
 local BURST_CONT_THRESHOLD = 0.98
@@ -105,41 +110,26 @@ local TAT = {
 	{"Suppressor",  1.06, 1.0, 1.04, 1.0,  0.88, 1.12, 0.97},
 }
 
-local factory_units = {
-	{"armthund","armkam"},
-	{"armpw","armrock","armham","armwar","armflea"},
-	{"armmlv","armfav","armflash","armpincer","armstump","armart","armjanus"},
-	{"armdecade","armpt","armpship","armroy","armsub"},
-	{"armsh","armanac","armmh"},
-	{"armsaber","armsb","armseap"},
-	{"armbrawl","armpnix","armlance","armdfly","armblade","armstil","armliche"},
-	{"armfast","armamph","armzeus","armmav","armsptk","armfido","armsnipe","armfboy","armspid","armvader","armscab"},
-	{"armcroc","armlatnk","armbull","armgremlin","armmart","armmerl","armmanni"},
-	{"armcrus","armsubk","armserp","armantiship","armbats","armmship","armepoch","armlship"},
-	{"armbanth","armraz","armmar","armvang","armlun","armthor"},
-	{"corshad","corbw"},
-	{"corak","corstorm","corthud"},
-	{"cormlv","corfav","corgator","corgarp","corraid","corlevlr","corwolv"},
-	{"coresupp","corpt","corpship","corroy","corsub"},
-	{"corsh","corsnap","cormh","corhal"},
-	{"corcut","corsb","corseap"},
-	{"corape","corhurc","cortitan","corcrwh"},
-	{"corpyro","coramph","corcan","corsumo","cortermite","cormort","corhrk","corroach","corsktl","cormando"},
-	{"corsala","correap","corparrow","corgol","corban","cormart","corvroc","cortrem"},
-	{"corcrus","corshark","corssub","corantiship","corbats","cormship","corblackhy","corfship"},
-	{"corkorg","corkarg","corjugg","corshiva","corcat","corsok","cordemon"},
-	{"legkam","legcib","legmos"},
-	{"leggob","leglob","legcen","legbal","legkark"},
-	{"legscout","leghades","leghelios","leggat","legbar","legmlv","legamphtank"},
-	{"legnavyscout","legnavyfrigate","legnavydestro","legnavysub","legnavyartyship"},
-	{"legsh","legner","legmh","legcar"},
-	{"legspsurfacegunship","legspcarrier","legspbomber","legsptorpgunship"},
-	{"legstronghold","legmineb","legatorpbomber","legfort","legphoenix"},
-	{"legstr","legamph","legshot","leginc","legsrail","legbart","leginfestor","leghrk","legsnapper"},
-	{"legmrv","legaskirmtank","legfloat","legaheattank","legmed","legamcluster","legvcarry","legavroc","leginf"},
-	{"leganavycruiser","leganavyheavysub","leganavybattlesub","leganavybattleship","leganavyartyship","leganavymissileship","leganavyflagship","leganavyantiswarm"},
-	{"legeheatraymech","legeallterrainmech","legjav","legelrpcmech","legehovertank","legerailtank","legeshotgunmech","legkeres"},
-}
+-- One guaranteed spicy unit per factory. Derived from the live build tree
+-- instead of a hand-kept list: underwater, hover and amphib labs are covered
+-- too, and it follows whatever the game (or mod_tiers.lua) actually offers.
+local factory_units = {}
+for name, ud in pairs(UnitDefs) do
+	local bo = ud.buildoptions
+	if bo and #bo > 0 and not ud.speed and not is_pve(name) then
+		local combat = {}
+		for i = 1, #bo do
+			local o = UnitDefs[bo[i]]
+			if o and o.speed and o.builder ~= true
+			   and o.weapondefs and next(o.weapondefs) ~= nil then
+				combat[#combat+1] = bo[i]
+			end
+		end
+		if #combat > 0 then factory_units[#factory_units+1] = combat end
+	end
+end
+
+Spring.Echo("[BaRandom] factories: " .. #factory_units)
 
 -- Pass 1a: guaranteed spicy combat units per factory
 local unit_rarities = {}
@@ -160,10 +150,10 @@ for _, combat in ipairs(factory_units) do
 end
 
 -- Pass 1b: roll remaining units, 10% curse chance for combat units
--- Skip passive buildings (handled by mod_buildings.lua)
+-- Skip passive buildings (handled by mod_part2.lua)
 local cursed_units = {}
 for name, ud in pairs(UnitDefs) do
-	if not unit_rarities[name] and (ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true) then
+	if not unit_rarities[name] and not is_pve(name) and (ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true) then
 		local is_combat = ud.weapondefs and ud.builder ~= true
 		if is_combat and math.random() < CURSE_CHANCE then
 			local cl = get_rarity()
@@ -239,7 +229,9 @@ local function apply_unit_scaling(ud, R, at, MCost, ECost, Health)
 	local m_hp  = at and at[2] or 1.1
 	local m_spd = at and at[3] or 1.05
 	if cp then cp.rarity = tostring(R) end
-	sv(ud, "power", 1.2, R)
+	-- power is deliberately left alone: it is the XP rate divisor
+	-- (xp = 0.1 * experienceMult * target_power / attacker_power), so scaling it
+	-- by rarity would quietly make rare units slower learners. mod_xp.lua owns it.
 	sv(ud, "speed", m_spd, R, true)
 	sv(ud, "maxacc", 1.05, R)
 	sv(ud, "maxdec", 1.05, R)
@@ -247,12 +239,9 @@ local function apply_unit_scaling(ud, R, at, MCost, ECost, Health)
 	sv(ud, "sightdistance", 1.05, R)
 	sv(ud, "radardistance", 1.1, R)
 	sv(ud, Health, m_hp, R, true)
-	sv(ud, "idleautoheal", 1.1, R)
 	sv(ud, "energymake", 1.04, R)
 	sv(ud, "extractsmetal", 1.1, R)
 	sv(ud, "energyupkeep", 1.04, R)
-	sv(ud, "tidalgenerator", 1.04, R)
-	sv(ud, "windgenerator", 1.04, R)
 	if ud.builder == true then
 		sv(ud, MCost, 0.97, R, true)
 		sv(ud, ECost, 0.98, R, true)
@@ -267,11 +256,8 @@ local function apply_unit_scaling(ud, R, at, MCost, ECost, Health)
 		sv(ud, "builddistance", 1.05, R, true)
 	end
 	if cp then
-		sv(cp, "energyconv_efficiency", 1.04, R)
-		sv(cp, "energyconv_capacity", 1.04, R, true)
 		sv(cp, "shield_power", 1.1, R, true)
 		sv(cp, "shield_radius", 1.05, R, true)
-		sv(cp, "energymultiplier", 1.04, R, true)
 	end
 end
 
@@ -401,7 +387,9 @@ local function apply_traits(ud, trait, Health)
 	tm_a(ud, "speed", tm.spd, true)
 	tm_a(ud, "turnrate", tm.turnrate)
 	tm_a(ud, "maxacc", tm.maxacc)
-	tm_a(ud, "idleautoheal", tm.autoheal)
+	-- idleautoheal is unset at tweakdef time; BAR fills in 5 hp/s afterwards but
+	-- only when nil, so write the multiplied value rather than multiplying nil.
+	if tm.autoheal then ud.idleautoheal = (tonumber(ud.idleautoheal) or 5) * tm.autoheal end
 	if cp then
 		tm_a(cp, "shield_power", tm.shield_power, true)
 		tm_a(cp, "shield_radius", tm.shield_radius, true)
@@ -420,9 +408,6 @@ local function apply_traits(ud, trait, Health)
 				end
 				if tm.impf then wd.impulsefactor = tm.impf end
 				if tm.impb then wd.impulseboost = tm.impb end
-				if tm.fs then wd.firestarter = tm.fs end
-				if tm.wob then wd.wobble = tm.wob end
-				if tm.dnc then wd.dance = tm.dnc end
 			end
 		end
 	end
@@ -446,7 +431,7 @@ end
 
 -- Pass 3: apply stat scaling
 for name, ud in pairs(UnitDefs) do
-	if ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true then
+	if not is_pve(name) and (ud.speed or (ud.weapondefs and next(ud.weapondefs) ~= nil) or ud.builder == true) then
 	local unit_rarity = unit_rarities[name] or 0
 	local MCost = ud.metalcost and "metalcost" or "buildcostmetal"
 	local ECost = ud.energycost and "energycost" or "buildcostenergy"

@@ -283,6 +283,15 @@ local function getMobilityFallback(def)
     return nil
 end
 
+-- Solars produce through a negative energyUpkeep instead of energyMake
+local function energyOutput(def)
+    local make = def.energyMake or 0
+    if make > 0 then return make end
+    local upkeep = def.energyUpkeep or 0
+    if upkeep < 0 then return -upkeep end
+    return 0
+end
+
 local function getCategory(def)
     -- Eco buildings only: static, unarmed, non-factory passive structures
     if (def.speed or 0) > 0 then return nil end
@@ -294,8 +303,9 @@ local function getCategory(def)
     if (def.radarDistanceJam or 0) > 0 then return "jammer" end
     if (def.radarDistance or 0) > 0 then return "radar" end
     if (def.sonarDistance or 0) > 0 then return "sonar" end
-    -- Energy producers (fusion has large energyStorage too — must check before storage)
-    if (def.energyMake or 0) > 5 then
+    -- Energy producers (fusion has large energyStorage too — must check before
+    -- storage). Solars have no energyMake: they generate via negative upkeep.
+    if (def.energyMake or 0) > 5 or (def.energyUpkeep or 0) < 0 then
         local n = def.name or ""
         if n:find("geo") then return "geo" end
         if n:find("afus") or n:find("fus") then return "fusion" end
@@ -311,7 +321,9 @@ end
 
 local function getCategoryStat(def, cat)
     if cat == "mex" then return fmtNum(def.extractsMetal or 0) end
-    if cat == "fusion" or cat == "solar" or cat == "geo" then return fmtNum(def.energyMake or 0) end
+    if cat == "fusion" or cat == "solar" or cat == "geo" then
+        return fmtNum(energyOutput(def))
+    end
     if cat == "windtidal" then
         local w = def.windGenerator or 0
         local t = def.tidalGenerator or 0
@@ -394,7 +406,7 @@ end
 --------------------------------------------------------------------------------
 
 local function getEcoOutput(def)
-    local eMake    = def.energyMake or 0
+    local eMake    = energyOutput(def)
     local mExtract = def.extractsMetal or 0
     local wind     = def.windGenerator or 0
     local tidal    = def.tidalGenerator or 0
@@ -501,8 +513,15 @@ local function parseInfologRarities()
         if entryType == "prefix" then
             local rarity = value:match("^%[(.-)%]$")
             if rarity then
-                rarityMap[unitName] = rarity
-                count = count + 1
+                local prev = rarityMap[unitName]
+                if prev and rarity:sub(1, 1) == "+" then
+                    -- Extra slots (mod_xp.lua) stack a "[+School]" bracket on
+                    -- top of the rarity one; keep the rarity, append the school
+                    rarityMap[unitName] = prev .. " " .. rarity
+                else
+                    rarityMap[unitName] = rarity
+                    count = count + 1
+                end
             end
         end
     end
