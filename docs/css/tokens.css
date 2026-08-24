@@ -1,0 +1,151 @@
+/* Design tokens — generated from the Beyond All Random design system.
+   Source: claude.ai design project, tokens/{colors,rarity,typography,spacing,shape}.css
+   Values are verbatim; edit them there first so the two stay in sync. */
+
+/* Beyond All Random — web builder palette (docs/css/style.css) */
+:root{
+  /* Raw surfaces — dark navy stack */
+  --bg-deep:#1a1a2e;
+  --surface-1:#16213e;
+  --surface-2:#0f3460;
+  --surface-hover:#1a2a4e;
+  --surface-tree:#111827;
+  --surface-terminal:#111;
+
+  /* Borders */
+  --border-subtle:#2a2a4e;
+  --border:#333;
+  --border-mid:#444;
+  --border-muted:#666;
+
+  /* Accent — amber */
+  --accent:#f0a030;
+  --accent-hover:#e09020;
+  --accent-on:#1a1a2e;
+
+  /* Text ramp */
+  --text-1:#e0e0e0;
+  --text-2:#cccccc;
+  --text-3:#bbbbbb;
+  --text-4:#aaaaaa;
+  --text-5:#999999;
+  --text-muted:#888888;
+  --text-faint:#666666;
+  --text-faintest:#555555;
+
+  /* Semantic */
+  --ok:#4caf50;
+  --warn:#ff9800;
+  --danger:#f44336;
+  --success-bg:#2e7d32;
+  --terminal-green:#00ff00;
+
+  /* Tree taxonomy colors */
+  --tree-branch:#60a5fa;
+  --tree-arch:#f0a030;
+  --tree-cat:#34d399;
+
+  /* Semantic aliases */
+  --page-bg:var(--bg-deep);
+  --text-body:var(--text-3);
+  --text-heading:var(--accent);
+  --text-label:var(--text-4);
+  --text-strong:var(--text-1);
+  --surface-card:var(--surface-1);
+  --surface-panel:var(--surface-2);
+  --surface-code:var(--surface-2);
+  --border-card:var(--border-subtle);
+  --border-control:var(--border-mid);
+  --focus-ring:var(--accent);
+}
+
+
+/* 28-tier rarity scale. Colors come from rarityColor() in docs/widgets/random_stats_viewer.lua
+   (Spring color escapes \255\R\G\B converted to hex). Each color covers a band of tiers. */
+:root{
+  --rarity-cursed:#b43c3c;   /* negative index — Cursed Mk.N */
+  --rarity-common:#969696;   /* tier 0        — Common */
+  --rarity-low:#ffffff;      /* tiers 1–2     — Uncommon, Rare */
+  --rarity-mid:#1ec81e;      /* tiers 3–4     — Exceptional, Epic */
+  --rarity-high:#1e78ff;     /* tiers 5–6     — Exotic, Legendary */
+  --rarity-epic:#c832ff;     /* tiers 7–10    — Mythical … Eternal */
+  --rarity-mythic:#ffa501;   /* tiers 11–15   — Supreme … Absurd */
+  --rarity-divine:#ffd701;   /* tiers 16–20   — Godlike … Dope */
+  --rarity-absurd:#ff5050;   /* tiers 21–25   — Admin … Beyond */
+  --rarity-beyond:#ff32c8;   /* tiers 26–28   — MGGW, AMBO, Beyond All Reason */
+}
+
+
+/* No webfonts ship with the source: the builder uses the OS UI stack, monospace for output. */
+:root{
+  --font-sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  --font-mono:monospace;
+
+  /* Source declares sizes in em against a 16px root. */
+  --fs-h1:2em;        /* 32px — page title */
+  --fs-h2:1.2em;      /* 19.2px — section heading */
+  --fs-h3:1em;        /* 16px — sub-heading */
+  --fs-body:0.9em;    /* 14.4px — body copy */
+  --fs-ui:0.95em;     /* 15.2px — buttons, inputs, tabs */
+  --fs-btn-lg:1.05em; /* 16.8px — primary action */
+  --fs-small:0.85em;  /* 13.6px — tables, code, previews */
+  --fs-micro:0.82em;  /* 13.1px — param descriptions, inline labels */
+  --fs-meta:0.8em;    /* 12.8px — badges, credits, output text */
+  --fs-pct:1.3em;     /* 20.8px — big percentage readout */
+
+  --lh-tight:1.5; /* @kind other */
+  --lh-body:1.6; /* @kind other */
+
+  --fw-bold:bold; /* @kind font */
+
+  /* Aliases */
+  --type-display:var(--fw-bold) var(--fs-h1)/1.2 var(--font-sans);
+  --type-body:var(--fs-body)/var(--lh-body) var(--font-sans);
+  --type-code:var(--fs-small)/var(--lh-tight) var(--font-mono);
+}
+
+
+/* Spacing values used verbatim in docs/css/style.css — no 4/8px grid snapping. */
+:root{
+  --sp-1:2px;
+  --sp-2:4px;
+  --sp-3:5px;
+  --sp-4:6px;
+  --sp-5:8px;
+  --sp-6:10px;
+  --sp-7:12px;
+  --sp-8:14px;
+  --sp-9:16px;
+  --sp-10:18px;
+  --sp-11:20px;
+  --sp-12:24px;
+  --sp-13:30px;
+
+  --page-pad:20px;
+  --page-pad-mobile:10px;
+  --panel-pad:24px;
+  --panel-pad-mobile:16px;
+  --card-pad:20px 24px;
+  --container-max:720px;
+}
+
+
+/* Radii, borders, transitions. Flat surfaces — the source uses no box-shadows at all. */
+:root{
+  --r-xs:3px;   /* inline code */
+  --r-sm:4px;   /* number inputs, terminal blocks */
+  --r-md:6px;   /* buttons, tabs, tree panel */
+  --r-lg:8px;   /* cards, panels */
+  --r-pill:12px;/* version badge */
+
+  --bw-hair:1px;
+  --bw-thick:2px; /* faction toggle buttons */
+
+  --shadow-none:none;
+
+  --dur:0.15s; /* @kind other */
+  --ease:linear; /* @kind other */
+  --transition-control:background var(--dur),color var(--dur);
+  --transition-all:all var(--dur);
+}
+

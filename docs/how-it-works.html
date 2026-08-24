@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beyond All Random — how it works</title>
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div class="wrap narrow">
+
+  <header class="topbar">
+    <div>
+      <div class="title-row">
+        <h1>How it works</h1>
+      </div>
+      <div class="tagline">
+        Beyond All Random &middot;
+        <span class="credit">a tweakdefs mod suite for Beyond All Reason</span>
+      </div>
+    </div>
+    <nav class="topnav">
+      <a href="index.html">&larr; Builder</a>
+      <a href="https://github.com/bazilio91/beyond-all-random" target="_blank" rel="noopener">GitHub</a>
+    </nav>
+  </header>
+
+  <p class="lede">
+    The mod rerolls the whole unit roster at match start: every unit gets a rarity tier, and the
+    high tiers pick up archetypes, traits and veterancy schools on top. Nothing is installed —
+    it is pasted into the lobby as tweakdefs. Below is what actually happens, in the order it
+    happens.
+  </p>
+
+  <div class="faq">
+
+    <details class="q" open>
+      <summary>What does the mod actually change?</summary>
+      <div class="a">
+        <p>It rewrites unit definitions before the match starts. Every unit rolls a <strong>rarity
+        tier</strong> from Common up to Beyond All Reason — 29 steps. The tier scales the unit's
+        stats exponentially: health, damage, range, speed, build costs. A Rare Peewee is a slightly
+        better Peewee; a Mythical one is a different problem entirely.</p>
+        <p>The roll happens once per match, at load, and is identical for everyone in the lobby.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>How is the tier rolled?</summary>
+      <div class="a">
+        <p>Every unit starts at Common and keeps escalating one tier at a time while a coin flip
+        keeps coming up heads. That coin is the <strong>rarity chance</strong> slider — at the
+        default 0.75, three quarters of the rolls climb another step, so the distribution is
+        geometric: lots of low tiers, a long thin tail of absurd ones.</p>
+        <p>Because it is a chain of independent flips, raising the slider does not shift the curve
+        evenly — it fattens the tail. The <em>expected roll spread</em> bar in the builder computes
+        the real distribution for whatever you have dialled in.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What is the guaranteed pick per factory?</summary>
+      <div class="a">
+        <p>Left alone, a geometric roll can leave a whole faction with nothing exciting. So before
+        the general roll, the mod walks every factory in the live build tree — including the
+        underwater, hover and amphibious ones — picks one combat unit it can build, and rolls that
+        unit with the escalation <em>starting</em> at the <strong>min factory rarity</strong>
+        (Mythical by default) instead of at Common.</p>
+        <p>Those units are also exempt from the curse roll. Whatever lab you open, something in it
+        is worth building.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What are archetypes and traits?</summary>
+      <div class="a">
+        <p>From rarity 5 up, an armed unit also draws an <strong>archetype</strong> that bends its
+        scaling: Glass Cannon, Tank, Sniper or Brawler for mobiles, Fortress, Watchtower or
+        Suppressor for turrets. A Tank archetype trades speed for health; a Glass Cannon does the
+        opposite.</p>
+        <p>On top of that it can roll a <strong>trait</strong> from its archetype's own pool —
+        Phantom cloaks while stationary, Juggernaut adds 60% health for a third of the speed,
+        Siren replaces damage with brutal knockback. Passive buildings roll from category pools
+        instead: mexes, energy, wind/tidal, converters, radar, sonar, jammers, storage.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What are cursed units?</summary>
+      <div class="a">
+        <p>A slice of combat units — 20% by default — roll cursed instead of rare. They come out
+        weaker across the board but considerably cheaper, and they are marked
+        <code>[Cursed Mk.N]</code> in-game. Set the curse chance to 0 to switch them off.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What are veterancy schools?</summary>
+      <div class="a">
+        <p>Beyond All Reason already gives units experience, and experience already improves health
+        and rate of fire. The only per-unit dial a tweakdef owns is the <code>power</code> tag,
+        which is the divisor in the experience formula — so schools are built on it:</p>
+        <ul>
+          <li><strong>Prodigy</strong> learns about twelve times faster and snowballs if it survives.</li>
+          <li><strong>Bloodthirsty</strong> is fragile but grows fast on kills.</li>
+          <li><strong>Ascendant</strong> evolves into a costlier unit from the same lab once it has
+          earned enough experience.</li>
+          <li><strong>Trophy</strong> never veterans and hands the killer a pile of experience,
+          but starts far tougher.</li>
+          <li><strong>Conscript</strong> is cheap fodder that learns nothing.</li>
+          <li><strong>Mentor</strong> is for labs and constructors: the builder banks the experience
+          of everything it built and stamps half of it on the next unit off the line.</li>
+        </ul>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What does tier lock do?</summary>
+      <div class="a">
+        <p>It rolls one random tech tier — T1, T2 or T3 — at load and locks the buildable combat
+        roster to it. Economy and utility stay available at every tier, so the game is still
+        playable: only combat units, labs and defensive turrets get capped.</p>
+        <p>On a T2 roll commanders can build T2 labs directly at T1 cost; on T3 they build gantries
+        at T1 bot lab cost and gantries get T2 constructors appended so the economy is reachable.
+        It is optional and lives in its own lobby slot.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>Why is it split across several lobby slots?</summary>
+      <div class="a">
+        <p>Each <code>!bset tweakdefs</code> slot accepts at most 16,384 characters, and the mod is
+        bigger than that. It is split by scope:</p>
+        <ul>
+          <li><code>tweakdefs</code> — combat units, armed buildings, constructors.</li>
+          <li><code>tweakdefs1</code> — passive buildings plus the veterancy schools.</li>
+          <li><code>tweakdefs2</code> — the optional faction buff.</li>
+          <li><code>tweakdefs3</code> — the optional tier lock.</li>
+        </ul>
+        <p>All slots run in the same Lua state, in slot order, so the later ones can read what the
+        earlier ones decided. The builder shows a live character budget per slot; if a payload goes
+        over, it will not fit in the lobby field.</p>
+      </div>
+    </details>
+
+    <details class="q" id="widget">
+      <summary>Why do I need the renamer widget, and how do I install it?</summary>
+      <div class="a">
+        <p>Tweakdefs can change a unit's stats but not the name the client shows. The mod prints its
+        rename table into the infolog, and <strong>Tweakdefs Bridge</strong> — Ambo's widget, v6 or
+        newer — reads it and relabels the units, so you see
+        <code>[Mythical Marksman Sniper]</code> instead of guessing. Without it everything still
+        works; you just cannot tell what you are looking at.</p>
+        <p class="downloads">
+          <a href="widgets/Tweakdefs_bridge.lua" download>Download Tweakdefs Bridge</a>
+          <span class="req">required &middot; v6+</span>
+          <a href="widgets/random_stats_viewer.lua" download>Download Stats Viewer</a>
+          <span class="req">optional</span>
+        </p>
+        <ol>
+          <li>Put the <code>.lua</code> file into <code>data/LuaUI/Widgets/</code> inside your BAR
+          install folder.</li>
+          <li>Start a match, open <strong>Settings &rarr; Custom</strong> and enable the widget.</li>
+          <li>Stats Viewer adds an in-game panel with the full roll; toggle it with
+          <code>/unitstats</code>.</li>
+        </ol>
+        <p>Bridges older than v6 (May 2026) read only one rename block and drop half the prefixes —
+        replace anything you installed before then.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>Does everyone in the match get the same roll?</summary>
+      <div class="a">
+        <p>Yes. The tweakdefs string is part of the lobby setup, so every client loads the same code
+        and the random rolls resolve identically on each machine. There is no per-player advantage,
+        and no desync — the definitions are decided before the match starts and never change during
+        it.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What about raptors and scavengers?</summary>
+      <div class="a">
+        <p>PvE rosters are left alone: raptors, critters and the scavenger-named structures are
+        skipped, so their build trees and stats are exactly what the PvE mode expects.</p>
+        <p>One caveat that cannot be fixed from a tweakdef: the <code>&lt;unit&gt;_scav</code>
+        mirrors are generated by the game <em>after</em> tweakdefs run, so a scav copy inherits
+        whatever its player-side original rolled.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>What does the faction buff do?</summary>
+      <div class="a">
+        <p>It multiplies one faction's health, speed, damage, range, area of effect and shields by a
+        flat factor, and divides reload by it. It does not touch the rarity rolls at all — it is
+        there for players against a boosted AI, or for deliberately lopsided matches.</p>
+      </div>
+    </details>
+
+    <details class="q">
+      <summary>Can I tune the roll?</summary>
+      <div class="a">
+        <p>That is what the builder is for. Start from a preset — Classic is the shipped balance,
+        Tame is closer to vanilla, Chaos pushes absurd tiers everywhere, Trait hunt keeps tiers rare
+        but makes traits near-certain — then move anything you like. Per-faction floors and ceilings
+        clamp the roll for one faction only, which is the usual way to build a tougher AI opponent.</p>
+        <p>Payloads rebuild as you type, so the character budget on the right always reflects what
+        you are about to paste.</p>
+      </div>
+    </details>
+
+  </div>
+
+  <footer class="page">
+    Beyond All Random by LoH &middot; based on AMBO &amp; MGGW&rsquo;s Random Rarities mod &middot;
+    <a href="index.html">back to the builder</a>
+  </footer>
+
+</div>
+
+<script>
+  // A deep link like how-it-works.html#widget lands on a collapsed <details>;
+  // open it so the answer is there instead of one more click away.
+  (function () {
+    function openTarget() {
+      var el = location.hash && document.getElementById(location.hash.slice(1));
+      if (!el || el.tagName !== 'DETAILS') return;
+      el.open = true;
+      // opening changes the layout under us, so scroll on the next frame
+      requestAnimationFrame(function () { el.scrollIntoView({ block: 'start' }); });
+    }
+    openTarget();
+    addEventListener('hashchange', openTarget);
+  })();
+</script>
+</body>
+</html>
