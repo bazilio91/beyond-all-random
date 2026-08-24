@@ -1,8 +1,28 @@
 #!/bin/bash
-# Regenerate rarity-template.js segments when mod.lua is staged
+# Regenerate docs/js/*-template.js segments when the corresponding mod .lua files are staged.
 
-if git diff --cached --name-only | grep -q '^mod\.lua$'; then
-  echo "mod.lua changed — regenerating rarity-template.js segments..."
-  make segments
-  git add docs/js/rarity-template.js
+STAGED=$(git diff --cached --name-only)
+REGEN=0
+
+if echo "$STAGED" | grep -q '^mod\.lua$'; then
+	echo "mod.lua changed — regenerating rarity-template.js..."
+	luamin -c < mod.lua | node scripts/generate_segments.js
+	git add docs/js/rarity-template.js
+	REGEN=1
 fi
+
+if echo "$STAGED" | grep -q '^mod_part2\.lua$'; then
+	echo "mod_part2.lua changed — regenerating part2-template.js..."
+	luamin -c < mod_part2.lua | node scripts/generate_part2_segments.js
+	git add docs/js/part2-template.js
+	REGEN=1
+fi
+
+if echo "$STAGED" | grep -q '^mod_tiers\.lua$'; then
+	echo "mod_tiers.lua changed — regenerating tiers-template.js..."
+	luamin -c < mod_tiers.lua | node scripts/generate_tiers_segments.js
+	git add docs/js/tiers-template.js
+	REGEN=1
+fi
+
+exit 0

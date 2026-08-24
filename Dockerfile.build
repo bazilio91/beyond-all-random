@@ -1,6 +1,6 @@
 FROM node:20-alpine
-RUN apk add --no-cache bash && npm install -g luamin
+RUN apk add --no-cache bash lua5.1 && npm install -g luamin
 WORKDIR /build
-COPY serialize.sh mod.lua mod_buildings.lua ./
+COPY serialize.sh mod.lua mod_part2.lua mod_tiers.lua ./
 RUN sed -i 's/\r$//' serialize.sh && chmod +x serialize.sh
 ENTRYPOINT ["bash", "./serialize.sh"]

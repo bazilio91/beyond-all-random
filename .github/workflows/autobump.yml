@@ -31,14 +31,18 @@ jobs:
       - name: Update version strings
         run: |
           VERSION=${{ steps.tag.outputs.next }}
-          sed -i "1s/--BaRandom .* by LoH/--BaRandom $VERSION by LoH/" mod.lua
+          sed -i "1s/--BaRandom v[0-9]* by LoH/--BaRandom $VERSION by LoH/" mod.lua
+          sed -i "1s/--BaRandom Part 2 .* by LoH/--BaRandom Part 2 $VERSION by LoH/" mod_part2.lua
+          sed -i "1s/--BaRandom Tiers .* by LoH/--BaRandom Tiers $VERSION by LoH/" mod_tiers.lua
           sed -i "s/--BaRandom v[0-9]* by LoH/--BaRandom $VERSION by LoH/" docs/js/rarity-template.js
+          sed -i "s/--BaRandom Part 2 v[0-9]* by LoH/--BaRandom Part 2 $VERSION by LoH/" docs/js/part2-template.js
+          sed -i "s/--BaRandom Tiers v[0-9]* by LoH/--BaRandom Tiers $VERSION by LoH/" docs/js/tiers-template.js
 
       - name: Commit version bump
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add mod.lua docs/js/rarity-template.js
+          git add mod.lua mod_part2.lua mod_tiers.lua docs/js/rarity-template.js docs/js/part2-template.js docs/js/tiers-template.js
           git diff --cached --quiet || git commit -m "chore: bump version to ${{ steps.tag.outputs.next }} [skip ci]"
           git push
 
