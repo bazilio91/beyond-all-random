@@ -515,7 +515,7 @@ local function parseInfologRarities()
             if rarity then
                 local prev = rarityMap[unitName]
                 if prev and rarity:sub(1, 1) == "+" then
-                    -- Extra slots (mod_xp.lua) stack a "[+School]" bracket on
+                    -- Extra slots (mod_part2.lua) stack a "[+School]" bracket on
                     -- top of the rarity one; keep the rarity, append the school
                     rarityMap[unitName] = prev .. " " .. rarity
                 else

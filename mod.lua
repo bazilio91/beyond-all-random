@@ -231,7 +231,7 @@ local function apply_unit_scaling(ud, R, at, MCost, ECost, Health)
 	if cp then cp.rarity = tostring(R) end
 	-- power is deliberately left alone: it is the XP rate divisor
 	-- (xp = 0.1 * experienceMult * target_power / attacker_power), so scaling it
-	-- by rarity would quietly make rare units slower learners. mod_xp.lua owns it.
+	-- by rarity would quietly make rare units slower learners. mod_part2.lua owns it.
 	sv(ud, "speed", m_spd, R, true)
 	sv(ud, "maxacc", 1.05, R)
 	sv(ud, "maxdec", 1.05, R)
