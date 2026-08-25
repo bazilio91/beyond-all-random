@@ -35,9 +35,15 @@ local UnitDefs = {
 		buildoptions = { "armck", "armpw", "armrock", "armham", "armwar", "armflea" },
 		workertime = 100, builddistance = 128, builder = true,
 		customparams = { techlevel = 1 } },
+	-- energymake is not a typo: every BAR construction unit trickles energy
+	-- (armck 7, armack 14), which is exactly what used to get cons filed as
+	-- eco buildings and exempted from the tier filter.
 	armck = { metalcost = 110, energycost = 190, buildtime = 2000, health = 500, speed = 46,
-		builder = true, workertime = 80, builddistance = 128,
-		buildoptions = { "armlab", "armsolar", "armmex", "armllt", "armrad" },
+		builder = true, workertime = 80, builddistance = 128, energymake = 7,
+		-- T1 cons are what puts the T2 lab on the map, which is what makes it
+		-- eligible for mod_tiers.lua's commander override
+		buildoptions = { "armlab", "armalab", "armsolar", "armmex", "armllt",
+			"armrad", "armanni" },
 		customparams = { techlevel = 1 } },
 	armpw = { metalcost = 46, energycost = 690, buildtime = 1000, health = 300, speed = 47,
 		weapondefs = { arm_pw = gun(20, 0.4) }, customparams = { techlevel = 1 } },
@@ -51,6 +57,11 @@ local UnitDefs = {
 		weapondefs = { arm_flea = gun(9, 0.3) }, customparams = { techlevel = 1 } },
 	armllt = { metalcost = 65, energycost = 300, buildtime = 900, health = 600,
 		weapondefs = { arm_llt = gun(60, 0.8) }, customparams = { techlevel = 1 } },
+	-- The T2 turret carries a battery and a radar, the two fields that used to
+	-- get it filed as eco/utility and waved past the tier filter
+	armanni = { metalcost = 1450, energycost = 22000, buildtime = 24000, health = 3000,
+		energystorage = 1000, radardistance = 1500,
+		weapondefs = { arm_anni = gun(420, 2.2) }, customparams = { techlevel = 2 } },
 	armbeamer = { metalcost = 150, energycost = 1300, buildtime = 2000, health = 800,
 		weapondefs = { arm_beam = { range = 320, reloadtime = 0.5, beamtime = 0.5,
 			damage = { default = 40 }, customparams = {} } },
@@ -97,16 +108,21 @@ local UnitDefs = {
 		weapondefs = { arm_zeus = gun(280, 1.6) }, customparams = { techlevel = 2 } },
 	armfido = { metalcost = 320, energycost = 4200, buildtime = 5200, health = 1300, speed = 40,
 		weapondefs = { arm_fido = gun(210, 2.4) }, customparams = { techlevel = 2 } },
+	-- BAR ships every commander with a hole in buildoptions -- armcom has no
+	-- [19] -- and the whole naval half of the list sits behind it. ipairs()
+	-- stops at the hole, so the gap here is load-bearing: it is the difference
+	-- between filtering the list and amputating it.
 	armcom = { metalcost = 2600, energycost = 26000, buildtime = 60000, health = 3700, speed = 24,
 		builder = true, workertime = 300, builddistance = 128,
-		buildoptions = { "armlab", "armsolar", "armmex", "armllt" },
+		buildoptions = { [1] = "armlab", [2] = "armllt",
+			[4] = "armsolar", [5] = "armmex", [6] = "armrad" },
 		weapondefs = { arm_disintegrator = gun(1000, 1.0) },
-		customparams = { techlevel = 1 } },
+		customparams = { techlevel = 1, iscommander = true } },
 	corcom = { metalcost = 2600, energycost = 26000, buildtime = 60000, health = 3700, speed = 24,
 		builder = true, workertime = 300, builddistance = 128,
 		buildoptions = { "corlab", "corsolar" },
 		weapondefs = { cor_disintegrator = gun(1000, 1.0) },
-		customparams = { techlevel = 1 } },
+		customparams = { techlevel = 1, iscommander = true } },
 	corlab = { metalcost = 600, energycost = 1200, buildtime = 6000, health = 2000,
 		buildoptions = { "corak" }, workertime = 100, builder = true,
 		customparams = { techlevel = 1 } },
@@ -348,10 +364,76 @@ for _, line in ipairs(echoes) do
 	if u then unclassified = u end
 end
 for n, was in pairs(pristine) do
-	if produces_energy(was) or (tonumber(was.extractsmetal) or 0) > 0
-	   or was.windgenerator or was.tidalgenerator then
+	if not was.speed and (produces_energy(was) or (tonumber(was.extractsmetal) or 0) > 0
+	   or was.windgenerator or was.tidalgenerator) then
 		check(not unclassified:find(n, 1, true),
 			n .. ": eco building unclassified by mod_tiers.lua")
+	end
+end
+
+local rolled_tier = nil
+for _, line in ipairs(echoes) do
+	local t = line:match("^%[BaRandom Tiers%] T(%d)$")
+	if t then rolled_tier = tonumber(t) end
+end
+check(rolled_tier ~= nil, "mod_tiers.lua never echoed its roll")
+
+local function pve(n)
+	return n:find("raptor") or n:find("scav") or n:find("critter")
+end
+local function tech(d)
+	local t = math.floor(tonumber(d.customparams and d.customparams.techlevel) or 1)
+	if t < 1 then return 1 elseif t > 3 then return 3 end
+	return t
+end
+-- What mod_tiers.lua is allowed to gate: things that come off a build list and
+-- belong to a tech tier. Everything else -- eco, radar, nano turrets,
+-- transports, walls -- is all-tier and has to survive every roll. Read off the
+-- pristine defs, so a factory the filter emptied is still recognised as one.
+local function gated(d)
+	if d.customparams and d.customparams.iscommander then return false end
+	local armed = d.weapondefs and next(d.weapondefs) ~= nil
+	if d.speed then return (armed or d.builder == true) and true or false end
+	if next(d.buildoptions) ~= nil then return true end  -- factory
+	if d.builder == true then return false end           -- nano turret
+	return armed and true or false                       -- defence
+end
+
+-- Raw buildoptions are sparse and ipairs() stops at the first hole, taking the
+-- rest of the list with it. Walk the original indices and account for every
+-- entry: gated ones survive only at the rolled tier, the rest always survive.
+-- The one exception is the T3 escape hatch, which hands the gantries T2
+-- construction units on purpose.
+for n, was in pairs(pristine) do
+	if rolled_tier and not pve(n) then
+		local now = {}
+		for _, o in ipairs(UnitDefs[n].buildoptions) do now[o] = true end
+		local hi = 0
+		for k in pairs(was.buildoptions) do
+			if type(k) == "number" and k > hi then hi = k end
+		end
+		for i = 1, hi do
+			local o = was.buildoptions[i]
+			local d = o and pristine[o]
+			if d and gated(d) then
+				local hatch = rolled_tier == 3 and d.speed and d.builder == true
+				check(not now[o] or tech(d) == rolled_tier or hatch,
+					("%s still offers T%d %s on a T%d roll")
+						:format(n, tech(d), o, rolled_tier))
+			elseif d then
+				check(now[o], n .. ": dropped all-tier build option " .. o)
+			end
+		end
+	end
+end
+
+-- On a T2/T3 roll the commander trades its T1 labs for the rolled tier's
+if rolled_tier and rolled_tier ~= 1 then
+	local com = {}
+	for _, o in ipairs(UnitDefs.armcom.buildoptions) do com[o] = true end
+	check(not com.armlab, "armcom kept the T1 lab on a T" .. rolled_tier .. " roll")
+	if rolled_tier == 2 then
+		check(com.armalab, "armcom never got the T2 lab on a T2 roll")
 	end
 end
 

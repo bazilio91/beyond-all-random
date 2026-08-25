@@ -122,17 +122,49 @@ static units.
 
 Rolls `TIER = math.random(1, 3)` at load and filters the buildable roster so only rolled-tier combat/labs/defense units appear. Eco + utility (mex, solar, wind/tidal, fusion, afus, geo, converter, storage, radar, sonar, jammer, nano turret, commander) stay all-tier.
 
-**Classification:** every `UnitDef` is tagged on two axes — `tier` (1/2/3/"all") and `gate` (combat/lab/defense/eco/utility). Tier comes from `customparams.techlevel` with a fallback to `1`. Gate is derived from UnitDef fields (weapondefs, buildoptions, speed, builder, eco/utility indicators).
+**Sparse `buildoptions`.** 20 defs ship a build list with holes in it — all
+three commanders and every evocom level are missing `[19]`, `armhacs` is missing
+five indices, `cormandot4` is missing `[1]`. BAR does not repack them before
+tweakdefs run (`normalizeUnitDef` only `ensureTable`s), so `ipairs` stops at the
+first hole and everything behind it is dropped. On a commander that is the
+entire naval half of the list — shipyard, torpedo launcher, floating
+constructors, hover and seaplane platforms — gone on *every* roll, T1 included.
+`bo_list()` walks the integer keys instead and every loop in the file goes
+through it.
 
-**Commander overrides:** when T2/T3 rolls, commanders get the rolled-tier labs appended to `buildoptions` (they can't normally build T2/T3 labs directly) and T1 construction units stripped.
+**Classification:** every `UnitDef` is tagged on two axes — `tier` (1/2/3/"all")
+and `gate` (combat/lab/defense/eco/utility). Tier comes from
+`customparams.techlevel`, floored and clamped into 1..3: the hover / amphib /
+seaplane platforms are `1.5` and the scav bosses are `4`, and a bare `== TIER`
+test locks anything else out of all three rolls. Gate is derived from UnitDef
+fields, and **the order of the tests is the whole game**:
 
-**T3 meme-mode escape hatches:** T3 gantries get T2 construction units appended; T2 cons keep eco+utility options but lose combat/labs (so the economy is still reachable).
+- **mobile before eco** — every construction unit trickles energy (`armck`
+  `energymake = 7`, `armack` 14), so an eco-first test files all of them as eco
+  and the tier lock never touches a con.
+- **buildoptions before builder** — every lab sets `builder = true`, so a plain
+  `builder and not speed` test (meant for nano turrets) swallows all 66
+  factories and the `lab` gate never fires at all. That took the commander
+  override, the T3 escape hatch and the cost flattening down with it: all three
+  read `unit_gate == "lab"`.
+- **armed before eco and radar** — `armanni` carries `energystorage = 1000` and
+  `radardistance = 1500`, `corbhmth`/`cordoom`/the shields the same, so an
+  eco-first test exempts the heavy defences from the filter.
+
+The `lab=` entry in the gate histogram is the canary: if it is missing, the
+factory half of the file is inert.
+
+**Commander overrides:** when T2/T3 rolls, commanders get the rolled-tier labs appended to `buildoptions` (they can't normally build T2/T3 labs directly) and T1 construction units stripped. Commanders are found by `customparams.iscommander`, which covers all 38 variants (starters, con-coms, Legion loadouts, the nine evocom levels) rather than the three starter names. Only labs that appear in *someone's* build list are appended, which keeps scav-only factories (`armapt3`) out of the player's hands.
+
+**T3 meme-mode escape hatches:** T3 gantries get T2 construction units appended; T2 cons keep eco+utility options but lose combat/labs (so the economy is still reachable). Note there are **no player T3 defences** — the only four static armed defs at techlevel 3 are scav content — so a T3 roll is a game with no turrets at all.
 
 **Per-category cost flattening:** surviving T2/T3 labs have their `metalcost`, `energycost`, and `buildtime` overwritten by the T1 equivalent in the same faction and category (`armalab` ← `armlab`, `armavp` ← `armvp`, etc.). T3 gantries flatten to the faction's T1 bot lab. Mapping lives in the `COST_MAP` table.
 
-**Diagnostics:** echoes the gate histogram (`combat=218 defense=86 eco=238
-utility=342`) plus one line listing units that matched no gate (transports,
-walls, targeting facilities, cosmetics) and were therefore kept all-tier.
+**Diagnostics:** echoes the gate histogram (`combat=375 defense=130 eco=90
+lab=66 utility=295`) plus one line listing the statics that matched no gate
+(walls, targeting facilities, cosmetics) and were therefore kept all-tier.
+Mobile units that are neither armed nor builders — transports, drones,
+lootboxes — are deliberately all-tier and are not reported.
 
 **Integration:** orthogonal to the rarity system — never touches stats, weapondefs, or customparams the rarity system owns. Emits `Spring.Echo("[BaRandom Tiers] T" .. TIER)` for the viewer widget to surface.
 
@@ -250,9 +282,22 @@ or XP-inheritance config overwritten, mod_part2.lua's category histogram
 matching an independent classifier in the test, every building trait belonging to
 its category's pool, energy output never shrinking, no eco building landing in
 mod_tiers.lua's unclassified list, and every evolution target resolving without
-changing the footprint of a static unit or its tech level. Pass a directory of real BAR
-`return { name = {...} }` unit files as the first argument to run at full scale
-(`git -C Beyond-All-Reason archive HEAD units/ | tar -x -C /tmp/u`).
+changing the footprint of a static unit or its tech level.
+
+The tier lock gets its own accounting pass: every original build option is
+walked by index and has to be accounted for — a tier-gated one survives only at
+the rolled tier (or as the T3 con hatch), everything else survives
+unconditionally. That is what catches a truncated list, an ungated gate and a
+misfiled unit in one check. The synthetic defs are shaped to trip all three:
+`armcom` has a hole at `[3]` with eco and radar entries behind it, `armck`
+carries `energymake`, and `armanni` carries the battery and radar that used to
+buy a T2 turret its way out of the filter. On a T2/T3 roll the commander must
+also have traded its T1 lab for the rolled tier's.
+
+Pass a directory of real BAR `return { name = {...} }` unit files as the first
+argument to run at full scale (`git -C Beyond-All-Reason archive HEAD units/ |
+tar -x -C /tmp/u`; the loader reads one flat directory, so flatten the tree
+first).
 
 ### docs/ — the web builder (GitHub Pages)
 
@@ -335,7 +380,7 @@ v6 takes the **last** `block_count` line as an anchor and reads the last N compl
 
 ### Other files
 
-- **random_stats_viewer.lua** — In-game UI widget. Parses `infolog.txt` to read rarity assignments, displays units organized by faction with color-coded rarity, stats, and factory build trees. Toggle with `/unitstats`. Does its own infolog parsing and does not depend on the bridge.
+- **widget_random_stats_viewer.lua** — In-game UI widget. Parses `infolog.txt` to read rarity assignments, displays units organized by faction with color-coded rarity, stats, and factory build trees. Toggle with `/unitstats`. Does its own infolog parsing and does not depend on the bridge. **Not published on the site** — it is no longer copied into `docs/widgets/` and `make widgets` only syncs the bridge; the file lives in the repo root (gitignored with the other `widget_*.lua`).
 
 - **disable_t3_air.lua** — Makes T3 air units prohibitively expensive.
 
