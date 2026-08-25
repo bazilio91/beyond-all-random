@@ -1,4 +1,4 @@
---BaRandom Tiers v31 by LoH
+--BaRandom Tiers v32 by LoH
 local TIER = math.random(1, 3)
 Spring.Echo("[BaRandom Tiers] T" .. TIER)
 
