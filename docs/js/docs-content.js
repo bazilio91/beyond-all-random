@@ -127,9 +127,8 @@ var DocsContent = {
   ].join(''),
 
   widgetInfo: [
-    '<h3>Renamer widgets</h3>',
-    '<p>Drop these into <code>data/LuaUI/Widgets/</code> in your BAR install folder, then enable them in Settings &rarr; Custom.</p>',
-    '<p><strong>Required:</strong> <a href="widgets/Tweakdefs_bridge.lua" download>Tweakdefs Bridge</a> v6 (2026-05-17 or newer) &mdash; renames units to show rarity, archetype and trait. Older builds read only one half of the mod, so half the prefixes go missing; replace any bridge installed before May 2026.</p>',
-    '<p><strong>Optional:</strong> <a href="widgets/random_stats_viewer.lua" download>Stats Viewer</a> &mdash; in-game panel listing every unit with its roll. Toggle with <code>/unitstats</code>.</p>'
+    '<h3>Renamer widget</h3>',
+    '<p>Drop it into <code>data/LuaUI/Widgets/</code> in your BAR install folder, then enable it in Settings &rarr; Custom.</p>',
+    '<p><strong>Required:</strong> <a href="widgets/Tweakdefs_bridge.lua" download>Tweakdefs Bridge</a> v6 (2026-05-17 or newer) &mdash; renames units to show rarity, archetype and trait. Older builds read only one half of the mod, so half the prefixes go missing; replace any bridge installed before May 2026.</p>'
   ].join('')
 };

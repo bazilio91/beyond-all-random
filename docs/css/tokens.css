@@ -60,7 +60,7 @@
 }
 
 
-/* 28-tier rarity scale. Colors come from rarityColor() in docs/widgets/random_stats_viewer.lua
+/* 28-tier rarity scale. Colors come from rarityColor() in widget_random_stats_viewer.lua
    (Spring color escapes \255\R\G\B converted to hex). Each color covers a band of tiers. */
 :root{
   --rarity-cursed:#b43c3c;   /* negative index — Cursed Mk.N */

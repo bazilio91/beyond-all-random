@@ -51,11 +51,10 @@ test:
 	@docker build -q -f Dockerfile.build -t bar-build . > /dev/null
 	@MSYS_NO_PATHCONV=1 docker run --rm -v "$(CURDIR)":/build -w /build --entrypoint lua5.1 bar-build scripts/smoke_test.lua $(DEFS) $(SEED)
 
-widgets: widget_tweakdefs_bridge.lua widget_random_stats_viewer.lua
+widgets: widget_tweakdefs_bridge.lua
 	@mkdir -p docs/widgets
 	@cp widget_tweakdefs_bridge.lua docs/widgets/Tweakdefs_bridge.lua
-	@cp widget_random_stats_viewer.lua docs/widgets/random_stats_viewer.lua
-	@echo "Synced widgets to docs/widgets/"
+	@echo "Synced widget to docs/widgets/"
 
 clean:
 	rm -f mod.b64 mod_part2.b64 mod_tiers.b64 faction_buff.b64
