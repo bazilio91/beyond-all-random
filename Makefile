@@ -1,4 +1,4 @@
-.PHONY: all clean segments setup docker widgets test
+.PHONY: all clean segments setup docker test
 
 VERSION := $(shell git describe --tags --abbrev=0 2>/dev/null || echo v0)
 
@@ -27,9 +27,10 @@ faction_buff.b64: faction_buff.lua
 	./serialize.sh faction_buff.lua > faction_buff.b64
 
 segments: mod.lua mod_part2.lua mod_tiers.lua
-	@luamin -c < mod.lua | node scripts/generate_segments.js
-	@luamin -c < mod_part2.lua | node scripts/generate_part2_segments.js
-	@luamin -c < mod_tiers.lua | node scripts/generate_tiers_segments.js
+	@docker build -q -f Dockerfile.build -t bar-build . > /dev/null
+	@docker run --rm -i --entrypoint luamin bar-build -c < mod.lua | node scripts/generate_segments.js
+	@docker run --rm -i --entrypoint luamin bar-build -c < mod_part2.lua | node scripts/generate_part2_segments.js
+	@docker run --rm -i --entrypoint luamin bar-build -c < mod_tiers.lua | node scripts/generate_tiers_segments.js
 
 setup:
 	cp scripts/pre-commit .git/hooks/pre-commit
@@ -50,11 +51,6 @@ docker: mod.lua mod_part2.lua mod_tiers.lua
 test:
 	@docker build -q -f Dockerfile.build -t bar-build . > /dev/null
 	@MSYS_NO_PATHCONV=1 docker run --rm -v "$(CURDIR)":/build -w /build --entrypoint lua5.1 bar-build scripts/smoke_test.lua $(DEFS) $(SEED)
-
-widgets: widget_tweakdefs_bridge.lua
-	@mkdir -p docs/widgets
-	@cp widget_tweakdefs_bridge.lua docs/widgets/Tweakdefs_bridge.lua
-	@echo "Synced widget to docs/widgets/"
 
 clean:
 	rm -f mod.b64 mod_part2.b64 mod_tiers.b64 faction_buff.b64

@@ -518,15 +518,40 @@ end
 
 Spring.Echo("[BaRandom Part 2] xp: " .. schools_rolled .. " schools, " .. mentors_rolled .. " mentors")
 
-Spring.Echo("tweakdefs_rename_get_ready")
-for i, entry in pairs(rename_list) do
-	Spring.Echo("/("..entry[1].."/-"..entry[2].."/-"..entry[3].."/)")
+-- BAR's built-in "Tweakdefs Custom Unit Names" widget replaces the I18N entry of
+-- every unit carrying customparams.i18n_en_humanname / i18n_en_tooltip. The
+-- stock text comes from language/en/units.json; the prefix lists live in _G so a
+-- later slot stacks its brackets after the earlier slot's instead of in front.
+do
+	local N = rawget(_G, "BAR_NAMES") or {nb = {}, db = {}, np = {}, dp = {}}
+	rawset(_G, "BAR_NAMES", N)
+	local txt = (VFS and VFS.LoadFile and VFS.LoadFile("language/en/units.json")) or ""
+	local cut = txt:find('"descriptions"', 1, true) or #txt + 1
+	local names, descs = txt:sub(1, cut - 1), txt:sub(cut)
+	local touched = {}
+	for _, e in ipairs(rename_list) do
+		if UnitDefs[e[1]] then
+			local l = (e[2] == "prefix" and N.np or N.dp)
+			l[e[1]] = l[e[1]] or {}
+			table.insert(l[e[1]], e[3])
+			touched[e[1]] = true
+		end
+	end
+	for n in pairs(touched) do
+		local cp = UnitDefs[n].customparams or {}
+		UnitDefs[n].customparams = cp
+		-- commander variants and evocom levels borrow another unit's I18N key
+		-- (i18nfromunit); read the stock text from it and drop the pointer so
+		-- the per-unit override below is the one BAR looks up
+		local src = cp.i18nfromunit or n
+		cp.i18nfromunit = nil
+		N.nb[n] = N.nb[n] or names:match('"' .. src .. '"%s*:%s*"([^"]*)"') or n
+		N.db[n] = N.db[n] or descs:match('"' .. src .. '"%s*:%s*"([^"]*)"') or ""
+		cp.i18n_en_humanname = table.concat(N.np[n] or {}, " ") .. " " .. N.nb[n]
+		cp.i18n_en_tooltip = table.concat(N.dp[n] or {}, " ") .. " " .. N.db[n]
+	end
 end
-Spring.Echo("tweakdefs_rename_end")
 
--- Tweakdefs Bridge v6 count protocol: the widget only reads the last N rename
--- blocks, where N comes from the newest count line. Every tweakdefs slot runs in
--- the same Lua state, so we keep a running total and each block re-prints it.
-local rename_blocks = (rawget(_G, "BAR_RENAME_BLOCKS") or 0) + 1
-rawset(_G, "BAR_RENAME_BLOCKS", rename_blocks)
-Spring.Echo("tweakdefs_rename_block_count:" .. rename_blocks)
+-- Running total of slots that renamed; mod_part2.lua reads it to tell whether a
+-- rarity slot ran before it.
+rawset(_G, "BAR_RENAME_BLOCKS", (rawget(_G, "BAR_RENAME_BLOCKS") or 0) + 1)

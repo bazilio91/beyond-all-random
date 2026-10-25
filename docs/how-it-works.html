@@ -145,24 +145,16 @@
     </details>
 
     <details class="q" id="widget">
-      <summary>Why do I need the renamer widget, and how do I install it?</summary>
+      <summary>Do I need a renamer widget to see the rarity names?</summary>
       <div class="a">
-        <p>Tweakdefs can change a unit's stats but not the name the client shows. The mod prints its
-        rename table into the infolog, and <strong>Tweakdefs Bridge</strong> — Ambo's widget, v6 or
-        newer — reads it and relabels the units, so you see
-        <code>[Mythical Marksman Sniper]</code> instead of guessing. Without it everything still
-        works; you just cannot tell what you are looking at.</p>
-        <p class="downloads">
-          <a href="widgets/Tweakdefs_bridge.lua" download>Download Tweakdefs Bridge</a>
-          <span class="req">required &middot; v6+</span>
-        </p>
-        <ol>
-          <li>Put the <code>.lua</code> file into <code>data/LuaUI/Widgets/</code> inside your BAR
-          install folder.</li>
-          <li>Start a match, open <strong>Settings &rarr; Custom</strong> and enable the widget.</li>
-        </ol>
-        <p>Bridges older than v6 (May 2026) read only one rename block and drop half the prefixes —
-        replace anything you installed before then.</p>
+        <p>No. The mod writes the new names into each unit's <code>customparams</code>
+        (<code>i18n_en_humanname</code> / <code>i18n_en_tooltip</code>) and BAR's built-in
+        <strong>Tweakdefs Custom Unit Names</strong> widget, which is on by default, applies them. You see
+        <code>[Mythical Marksman Sniper]</code> on the unit with nothing to install.</p>
+        <p>The old <strong>Tweakdefs Bridge</strong> is not needed any more and no longer works: current BAR
+        stops user widgets from reading <code>infolog.txt</code>, which is where it got its data. If you
+        installed it, you can delete it from <code>data/LuaUI/Widgets/</code>. If names do not show, check
+        that <em>Tweakdefs Custom Unit Names</em> is enabled in Settings &rarr; Custom.</p>
       </div>
     </details>
 

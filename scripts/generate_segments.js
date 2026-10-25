@@ -4,7 +4,7 @@
 
 const fs = require("fs");
 
-const min = fs.readFileSync("/dev/stdin", "utf8").trim();
+const min = fs.readFileSync(0, "utf8").trim();
 
 // Split at parameter injection points:
 //   local b=<rarity_chance>;local c=<factory_rarity>;local d=<curse_chance>;

@@ -127,8 +127,7 @@ var DocsContent = {
   ].join(''),
 
   widgetInfo: [
-    '<h3>Renamer widget</h3>',
-    '<p>Drop it into <code>data/LuaUI/Widgets/</code> in your BAR install folder, then enable it in Settings &rarr; Custom.</p>',
-    '<p><strong>Required:</strong> <a href="widgets/Tweakdefs_bridge.lua" download>Tweakdefs Bridge</a> v6 (2026-05-17 or newer) &mdash; renames units to show rarity, archetype and trait. Older builds read only one half of the mod, so half the prefixes go missing; replace any bridge installed before May 2026.</p>'
+    '<h3>Unit names</h3>',
+    '<p>Rarity, archetype and trait show on each unit through the built-in <strong>Tweakdefs Custom Unit Names</strong> widget (on by default). Nothing to install; the old Tweakdefs Bridge no longer works on current BAR.</p>'
   ].join('')
 };

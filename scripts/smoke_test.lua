@@ -117,7 +117,7 @@ local UnitDefs = {
 		buildoptions = { [1] = "armlab", [2] = "armllt",
 			[4] = "armsolar", [5] = "armmex", [6] = "armrad" },
 		weapondefs = { arm_disintegrator = gun(1000, 1.0) },
-		customparams = { techlevel = 1, iscommander = true } },
+		customparams = { techlevel = 1, iscommander = true, i18nfromunit = "armproxy" } },
 	corcom = { metalcost = 2600, energycost = 26000, buildtime = 60000, health = 3700, speed = 24,
 		builder = true, workertime = 300, builddistance = 128,
 		buildoptions = { "corlab", "corsolar" },
@@ -197,7 +197,9 @@ Spring = { Echo = function(...)
 	for i = 1, select("#", ...) do parts[#parts+1] = tostring((select(i, ...))) end
 	echoes[#echoes+1] = table.concat(parts, " ")
 end }
-VFS = { LoadFile = function() return nil end }
+-- stock names/descriptions, shaped like language/en/units.json
+local UNITS_JSON = '{"units":{"names":{"armproxy":"Armada Commander"},"descriptions":{"armproxy":"Tough"}}}'
+VFS = { LoadFile = function(p) return p == "language/en/units.json" and UNITS_JSON or nil end }
 _G.UnitDefs = UnitDefs
 
 --------------------------------------------------------------------------------
@@ -217,18 +219,17 @@ end
 -- Report + invariants
 --------------------------------------------------------------------------------
 
-local renames, blocks, pve_renames = {}, 0, {}
-local last_count = nil
-for _, line in ipairs(echoes) do
-	local n, kind, val = line:match("^/%((.-)/%-(.-)/%-(.-)/%)$")
-	if n and kind == "prefix" then
-		renames[n] = (renames[n] and renames[n] .. " " or "") .. val
+local renames, pve_renames = {}, {}
+for n, ud in pairs(UnitDefs) do
+	local hn = ud.customparams and ud.customparams.i18n_en_humanname
+	if hn then
+		renames[n] = hn
 		if n:find("raptor") or n:find("scav") or n:find("critter") then
 			pve_renames[#pve_renames+1] = n
 		end
 	end
-	local bc = line:match("^tweakdefs_rename_block_count:(%d+)$")
-	if bc then blocks = blocks + 1; last_count = tonumber(bc) end
+end
+for _, line in ipairs(echoes) do
 	if line:match("^%[BaRandom") then print("     " .. line) end
 end
 
@@ -487,8 +488,17 @@ if factories then
 end
 print("     evo pairs: " .. evo_line)
 
-check(blocks == 2, "expected 2 rename block counters (mod, buildings+xp), got " .. blocks)
-check(last_count == 2, "last block_count should be 2, got " .. tostring(last_count))
+check(_G.BAR_RENAME_BLOCKS == 2, "expected 2 rename slots (mod, buildings+xp), got " .. tostring(_G.BAR_RENAME_BLOCKS))
+do
+	local cp = UnitDefs.armcom and UnitDefs.armcom.customparams or {}
+	check((cp.i18n_en_humanname or ""):find("Armada Commander$"), "armcom name lost its stock text: " .. tostring(cp.i18n_en_humanname))
+	check(cp.i18nfromunit == nil, "armcom kept its i18nfromunit pointer, BAR would ignore the override")
+	check((cp.i18n_en_tooltip or ""):find("Tough$"), "armcom tooltip lost its stock text: " .. tostring(cp.i18n_en_tooltip))
+end
+for n, hn in pairs(renames) do
+	-- the rarity bracket must come first, a school bracket ("[+...") after it
+	check(not hn:find("^%[%+"), n .. ": school bracket stacked in front of the rarity: " .. hn)
+end
 
 local schooled, ascend, mentor = 0, 0, 0
 local ascenders = {}

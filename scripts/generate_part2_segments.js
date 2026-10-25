@@ -4,7 +4,7 @@
 
 const fs = require("fs");
 
-const min = fs.readFileSync("/dev/stdin", "utf8").trim();
+const min = fs.readFileSync(0, "utf8").trim();
 
 // Split at parameter injection points. The building knobs and the XP knobs are
 // separate locals so the web builder can set either side on its own:

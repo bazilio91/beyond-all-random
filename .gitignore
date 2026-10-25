@@ -16,3 +16,6 @@ widget_*.lua
 # Misc
 docker_err.tmp
 *.tmp
+
+# Scratch files (all temp output goes here)
+.tmp/

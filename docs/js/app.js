@@ -26,7 +26,6 @@
   ];
 
   var SITE = 'https://bazilio91.github.io/beyond-all-random/';
-  var BRIDGE = SITE + 'widgets/Tweakdefs_bridge.lua';
 
   // The lobby message describes the settings actually configured above, so what
   // players read matches what they will be playing.
@@ -67,7 +66,6 @@
       parts.push('Tier lock is on: one random tech tier is rolled for everyone, and only that tier can be built.');
     }
 
-    parts.push('To see rarity names on units in-game, install the Tweakdefs Bridge widget (v6+): ' + BRIDGE);
     parts.push('Config builder: ' + SITE);
     return '!welcome-message ' + parts.join(' ');
   }
@@ -429,9 +427,8 @@
       '<div>Part 2 <code>!bset tweakdefs1</code></div>' +
       '<div>Faction buff <code>!bset tweakdefs2</code></div>' +
       '<div>Tier lock <code>!bset tweakdefs3</code></div>' +
-      '<div class="tail">To see rarity names on units in-game you need the renamer widget: ' +
-      '<a href="widgets/Tweakdefs_bridge.lua" download>download Tweakdefs Bridge</a> (v6+), ' +
-      '<a href="how-it-works.html#widget">how to install it</a>.</div>' +
+      '<div class="tail">Rarity names show on units through the built-in Tweakdefs Custom Unit Names widget, nothing to install. ' +
+      '<a href="how-it-works.html#widget">Details</a>.</div>' +
       '</section>';
 
     el('rail').innerHTML = html;

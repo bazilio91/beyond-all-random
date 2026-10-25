@@ -276,8 +276,9 @@ instead, which keeps the lobby down to three `!bset` lines.
 slots in load order against a synthetic `UnitDefs` table covering lab / con / bot
 / turret / mex / solar / radar / commander / raptor / scav / critter, with engine
 stubs for `Spring.Echo` and `VFS`. It fails on any Lua error and checks the
-invariants: PvE units untouched and unrenamed, two rename blocks with the
-counter ending at 2, every ascension target resolvable, no pre-existing evolution
+invariants: PvE units untouched and unrenamed, two rename slots (counter
+ending at 2), stock name/description kept under the prefixes, rarity bracket
+always ahead of a `[+School]` one, every ascension target resolvable, no pre-existing evolution
 or XP-inheritance config overwritten, mod_part2.lua's category histogram
 matching an independent classifier in the test, every building trait belonging to
 its category's pool, energy output never shrinking, no eco building landing in
@@ -361,26 +362,40 @@ collapsible. Its *Mirror* checkbox (on by default) feeds the shared roll setting
 and clamps into Part 2; unticking it reveals Part 2's own controls, which default
 to that template's own defaults (floor 5, not 0).
 
-### Tweakdefs Bridge protocol (external widget)
+### Unit names (customparams, no widget)
 
-In-game renaming is done by **Tweakdefs Bridge**, Ambo's widget (not ours). We ship a copy in `docs/widgets/Tweakdefs_bridge.lua` + `widget_tweakdefs_bridge.lua`; the upstream source is Ambo's thread on the BAR Discord (`#📝｜widgets` → Tweakdefs Renamer, https://discord.com/channels/549281623154229250/1468742915315470591). **v6 (`date = '2026-05-17'`) is the minimum.**
+Renames used to travel through infolog to Ambo's Tweakdefs Bridge. BAR now
+sandboxes user widgets (`luaui/barwidgets.lua`: `io.open` reads are limited to
+`luaui/`), so `infolog.txt` is unreadable — the bridge logs `Could not open
+infolog.txt: ... outside the read paths for user widgets` and renames nothing.
+It also broke `random_stats_viewer.lua`, which parses the same file.
 
-Each mod file prints one rename block to infolog:
+Names are now delivered the way BAR intends: BAR's own widget **Tweakdefs Custom
+Unit Names** (`luaui/Widgets/tweakdefs_unit_translations.lua`, mod widget, on by
+default) copies `customparams.i18n_en_humanname` / `i18n_en_tooltip` into the I18N
+table at startup. `mod.lua` and `mod_part2.lua` still build `rename_list`
+(`prefix` / `desc_prefix` entries) and flush it at the end of the file:
 
-```
-tweakdefs_rename_get_ready
-/(<unitDefName>/-<command>/-<text>/)      -- command: rename | prefix | desc_change | desc_prefix
-tweakdefs_rename_end
-tweakdefs_rename_block_count:<N>
-```
+- the stock name and description are read from `language/en/units.json` with a
+  pattern match (the file has no backslashes); a unit missing from it falls back
+  to its def name;
+- prefix lists are kept in `_G.BAR_NAMES` and the final string is rebuilt from
+  base + all prefixes, so the second slot's `[+School]` lands *after* the first
+  slot's rarity bracket instead of in front of it;
+- units that borrow another key (`customparams.i18nfromunit`: commander
+  variants, evocom levels, `armprowl`) have their stock text read from that key and
+  the pointer cleared, otherwise BAR looks up the proxy's name and ignores the
+  override. `_scav` mirrors need nothing: BAR builds their name from the base
+  unit's key, so they come out as `Scavenger [Rare] ...`;
+- `_G.BAR_RENAME_BLOCKS` is still incremented per slot, only because
+  `mod_part2.lua` uses it to tell whether a rarity slot ran before it.
 
-v6 takes the **last** `block_count` line as an anchor and reads the last N complete blocks; if the anchor falls outside that group's scope (`GROUP_WINDOW_BYTES = 500000`) it falls back to a single block. Since the mod is split across two tweakdefs slots, omitting the count made the widget drop half the prefixes.
-
-`mod.lua` and `mod_part2.lua` therefore keep a running counter in `_G.BAR_RENAME_BLOCKS` and re-print the total after their own block. All `tweakdefs*` slots execute via one `loadstring` in a shared Lua state (`Beyond-All-Reason/gamedata/unitdefs_post.lua`), sorted by slot index, so the last block to run prints the correct total — and a solo load still reports `1`. Any new file that emits renames must join the same counter.
+No `tweakdefs_rename_*` lines are echoed any more. `docs/widgets/` carries
+no bridge copy; `make widgets` is gone.
 
 ### Other files
 
-- **widget_random_stats_viewer.lua** — In-game UI widget. Parses `infolog.txt` to read rarity assignments, displays units organized by faction with color-coded rarity, stats, and factory build trees. Toggle with `/unitstats`. Does its own infolog parsing and does not depend on the bridge. **Not published on the site** — it is no longer copied into `docs/widgets/` and `make widgets` only syncs the bridge; the file lives in the repo root (gitignored with the other `widget_*.lua`).
+- **widget_random_stats_viewer.lua** — In-game UI widget. Reads the rarity from `customParams.i18n_en_humanname` (infolog is sandboxed away from user widgets), shows one faction at a time (Armada / Cortex / Legion) with tabs T1 / T2 / T3 / Static, units sorted by rarity with color-coded rarity, cost, HP, DPS, range and speed. Static splits into Defence, Labs and Eco / utility. Toggle with `/unitstats`. **Not published on the site** (no `docs/widgets/` copy, no make target); the file lives in the repo root (gitignored with the other `widget_*.lua`).
 
 - **disable_t3_air.lua** — Makes T3 air units prohibitively expensive.
 
@@ -390,7 +405,7 @@ v6 takes the **last** `block_count` line as an anchor and reads the last N compl
 
 - **Dockerfile.build** — Docker-based build with Node.js + luamin. Used by `make docker`.
 
-**Data flow:** `mod.lua` + `mod_part2.lua` + `mod_tiers.lua` modify UnitDefs and log to infolog → `random_stats_viewer.lua` parses infolog and renders UI.
+**Data flow:** `mod.lua` + `mod_part2.lua` + `mod_tiers.lua` modify UnitDefs (names go into `customparams.i18n_en_*`) → `random_stats_viewer.lua` reads them from UnitDefs and renders UI.
 
 ## Commit Conventions
 
