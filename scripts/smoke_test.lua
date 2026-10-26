@@ -526,6 +526,11 @@ for n, ud in pairs(UnitDefs) do
 			end
 			check(tl(target) == tl(ud), ("%s (T%d) ascends into %s (T%d)")
 				:format(n, tl(ud), cp.evolution_target, tl(target)))
+			-- a promotion is never a cursed roll, nor a hop between land and sea
+			check(not (target.customparams and target.customparams.cursed),
+				n .. " ascends into the cursed " .. cp.evolution_target)
+			local function sea(d) return tostring(d.movementclass or ""):upper():find("BOAT", 1, true) ~= nil end
+			check(sea(target) == sea(ud), n .. " ascends across land/sea into " .. cp.evolution_target)
 		end
 		if target and not ud.speed then
 			local fx, fz = tonumber(ud.footprintx) or 1, tonumber(ud.footprintz) or 1

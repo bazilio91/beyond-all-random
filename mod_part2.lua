@@ -405,6 +405,13 @@ local function techlevel(ud)
 	return cp and tonumber(cp.techlevel) or 1
 end
 
+-- An ascension must be a promotion: never into a cursed roll, and never across
+-- the land/sea line.
+local function ship(ud)
+	local mc = tostring(ud.movementclass or ""):upper()
+	return ud.floater == true or mc:find("BOAT", 1, true) ~= nil or mc:find("SHIP", 1, true) ~= nil
+end
+
 local function pick_target(name, ud)
 	local lst = from_lab[name]
 	if not lst then return nil end
@@ -420,6 +427,8 @@ local function pick_target(name, ud)
 		local oud = o ~= nil and o ~= name and UnitDefs[o]
 		if oud and not COMMANDERS[o] and not is_pve(o)
 		   and oud.builder ~= true and armed(oud)
+		   and not (oud.customparams and oud.customparams.cursed)
+		   and ship(oud) == ship(ud)
 		   and ((oud.speed and true or false) == mobile)
 		   and (mobile or same_fp(ud, oud)) and techlevel(oud) == tl
 		   and (tonumber(oud[mck(oud)]) or 0) >= cost then

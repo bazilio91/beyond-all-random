@@ -395,7 +395,7 @@ no bridge copy; `make widgets` is gone.
 
 ### Other files
 
-- **widget_random_stats_viewer.lua** — In-game UI widget. Reads the rarity from `customParams.i18n_en_humanname` (infolog is sandboxed away from user widgets), shows one faction at a time (Armada / Cortex / Legion) with tabs T1 / T2 / T3 / Static, units sorted by rarity with color-coded rarity, cost, HP, DPS, range and speed. Static splits into Defence, Labs and Eco / utility. Toggle with `/unitstats`. **Not published on the site** (no `docs/widgets/` copy, no make target); the file lives in the repo root (gitignored with the other `widget_*.lua`).
+- **widget_random_stats_viewer.lua** — In-game UI widget. Reads the rarity from `customParams.i18n_en_humanname` (infolog is sandboxed away from user widgets), shows one faction at a time (Armada / Cortex / Legion) with tabs T1 / T2 / T3 / Static. Lists damage dealers only (no builders, no AA-only units), sorted by rarity; each tier tab is coloured by its best unit and the tab holding the overall best gets a gold frame. A strip above the list shows the best economy per category (Metal / Energy / Converter / Storage): the most efficient option (output per 100 metal) and the biggest one. **Not published on the site** (no `docs/widgets/` copy, no make target); the file lives in the repo root (gitignored with the other `widget_*.lua`).
 
 - **disable_t3_air.lua** — Makes T3 air units prohibitively expensive.
 
