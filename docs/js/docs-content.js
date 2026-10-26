@@ -88,7 +88,7 @@ var DocsContent = {
       ['arch', 'Glass Cannon', 'HP 0.88 · Dmg 1.12 · Rld 0.91', ['Phantom — cloak, −15% HP', 'Volatile — +30% dmg, −40% HP', 'Overcharged — −20% reload']],
       ['arch', 'Tank', 'HP 1.22 · Dmg 1.01 · Rld 0.97', ['Juggernaut — +60% HP, −30% spd', 'Regenerator — 3× autoheal', 'Fortified — +30% HP']],
       ['arch', 'Sniper', 'HP 1.03 · Rng 1.14 · Acc 0.91', ['Marksman — +30% rng, +30% acc', 'Piercing — +20% dmg, −50% AoE']],
-      ['arch', 'Brawler', 'Spd 1.10 · AoE 1.10 · Rld 0.88', ['Swift — +40% spd, −30% HP', 'Siege — +40% AoE, +15% dmg']],
+      ['arch', 'Brawler', 'Spd 1.06 · AoE 1.05 · Rld 0.94', ['Swift — +40% spd, −30% HP', 'Siege — +40% AoE, +15% dmg']],
       ['arch', 'Fortress', 'HP 1.20 · Dmg 1.08', ['Shielded — +40% shield', 'Siren — knockback']],
       ['arch', 'Watchtower', 'HP 1.03 · Rng 1.14', ['Marksman — +30% rng']],
       ['arch', 'Suppressor', 'AoE 1.12 · Rld 0.88', ['Berserker — +30% dmg']]
